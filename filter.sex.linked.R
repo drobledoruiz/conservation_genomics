@@ -7,7 +7,7 @@
 ## This function requires:                                                    ##
 ##   - Input: a genlight object with sex ("F" or "M") in ind.metrics          ##
 ##   - User specified parameters:                                             ##
-##       - system = sex determination system ("zw" or "xy")                   ##                                        ##
+##       - system = sex determination system ("zw" or "xy")                   ##
 ##                                                                            ##
 ## Index:                                                                     ##
 ##   Line 19: Function                                                        ##
