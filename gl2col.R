@@ -16,45 +16,44 @@
 #
 ########################################################################
 
-library(dplyr)
 library(gdata)
 
-gl2col <- function(	genlight_file = NULL,			
-					filename_out = NULL,
-					project_name = 'my_project',
-					output_name = 'my_project',
-					probability_male = 0.5,
-					probability_female = 0.5,
-					seed = 1234,
-					update_allele_freq = 0,
-					di_mono_ecious = 2,
-					inbreed = 1,
-					diploid = 1,
-					polygamy_male = 0,
-					polygamy_female = 0,
-					clone_inference = 1,
-					scale_shibship = 1,
-					sibship_prior = 0,
-					known_allele_freq = 0,
-					num_runs = 1,
-					length_run = 2,
-					monitor_method = 0,
-					monitor_interval = 10000,
-					windows_gui = 0,
-					likelihood = 0,
-					precision_fl = 2,
-					marker_id = 'mk@',
-					marker_type = '0@',
-					allelic_dropout = '0.000@',
-					other_typ_err = '0.05@',
-					paternity_exclusion_threshold = '0 0',
-					maternity_exclusion_threshold = '0 0',
-					paternal_sibship = 0,
-					maternal_sibship = 0,
-					excluded_paternity = 0,
-					excluded_maternity = 0,
-					excluded_paternal_sibships = 0,
-					excluded_maternity_sibships = 0) {
+gl2col <- function( genlight_file = NULL,           
+                    filename_out = NULL,
+                    project_name = 'my_project',
+                    output_name = 'my_project',
+                    probability_male = 0.5,
+                    probability_female = 0.5,
+                    seed = 1234,
+                    update_allele_freq = 0,
+                    di_mono_ecious = 2,
+                    inbreed = 1,
+                    diploid = 1,
+                    polygamy_male = 0,
+                    polygamy_female = 0,
+                    clone_inference = 1,
+                    scale_shibship = 1,
+                    sibship_prior = 0,
+                    known_allele_freq = 0,
+                    num_runs = 1,
+                    length_run = 2,
+                    monitor_method = 0,
+                    monitor_interval = 10000,
+                    windows_gui = 0,
+                    likelihood = 0,
+                    precision_fl = 2,
+                    marker_id = 'mk@',
+                    marker_type = '0@',
+                    allelic_dropout = '0.000@',
+                    other_typ_err = '0.05@',
+                    paternity_exclusion_threshold = '0 0',
+                    maternity_exclusion_threshold = '0 0',
+                    paternal_sibship = 0,
+                    maternal_sibship = 0,
+                    excluded_paternity = 0,
+                    excluded_maternity = 0,
+                    excluded_paternal_sibships = 0,
+                    excluded_maternity_sibships = 0) {
 
 
 if(is.null(genlight_file)){
@@ -141,10 +140,10 @@ head_comments <- list('! No. offspring',
 polygamy <- paste(polygamy_male,polygamy_female,sep=' ')
 
 head.list <- list(n_offspring,loci,seed,update_allele_freq,di_mono_ecious,inbreed,diploid,
-					polygamy,clone_inference,scale_shibship,sibship_prior,known_allele_freq,
-					num_runs,length_run,monitor_method,monitor_interval,windows_gui,likelihood,precision_fl,'',marker_id,
-					marker_type,allelic_dropout,other_typ_err
-					)
+                    polygamy,clone_inference,scale_shibship,sibship_prior,known_allele_freq,
+                    num_runs,length_run,monitor_method,monitor_interval,windows_gui,likelihood,precision_fl,'',marker_id,
+                    marker_type,allelic_dropout,other_typ_err
+                    )
 # -----------------------------------------------
 sink(filename_out)
 cat(project_name,'\n')
@@ -211,7 +210,7 @@ last_values <- list(paternity_exclusion_threshold,
                     excluded_paternal_sibships,
                     excluded_maternity_sibships)
 
-sink(filename_out,append =TRUE)	 
+sink(filename_out,append =TRUE)  
 cat('\n')
 for(i in 1:length(last_values)){
 cat(last_values[[i]],'\t\t',last_comments[[i]],'\n')
@@ -229,12 +228,11 @@ sex.parental.ids <- function(gen_data){
 # read metadata and convert to lowercase
 indv.metadata <- gen_data@other$ind.metrics
 names(indv.metadata) <- tolower(names(indv.metadata))
-indv.metadata <- mutate_all(indv.metadata, tolower)
 
 # remove leading/trailing white spaces
-indv.metadata$Mother <- trim(indv.metadata$mother)
-indv.metadata$Father <- trim(indv.metadata$father)
-indv.metadata$Offspring <- trim(indv.metadata$offspring)
+indv.metadata$mother <- tolower(trim(indv.metadata$mother))
+indv.metadata$father <- tolower(trim(indv.metadata$father))
+indv.metadata$offspring <- tolower(trim(indv.metadata$offspring))
 
 mum_ids <- indv.metadata[indv.metadata$mother == 'yes', 'id']
 dad_ids <- indv.metadata[indv.metadata$father == 'yes', 'id']
@@ -303,4 +301,4 @@ gl2struc <- function(x,
     rownames(out) <- data[seq(1, nrow(data), by = 2), 1]  
     return(out) 
 }
-#-----------------------------------
+################################## END ######################################
