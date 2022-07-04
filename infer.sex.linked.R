@@ -30,7 +30,7 @@ Fun<- function(x,y,z){
 }
 
   A$SEX <- mapply(Fun, A$W.sex, A$Z.sex, A$ZWg.sex)
-return(A)
+  
   if(link=='xy'){
     names <- c( 'Y.link', '#NA', '#Scored', 
                 'X.link', '#Het',   '#Hom', 
