@@ -29,21 +29,19 @@
 
 
 ######################## Define MAIN function gl2colony ########################
-library(gdata)
 library(crayon)
-library(dplyr)
 
 gl2colony <- function(gl = NULL,           
                       filename_out = NULL,
                       project_name = 'my_project',
                       output_name = 'my_project',
-                      probability_male = 0.5,
-                      probability_female = 0.5,
-                      seed = 1234,
+                      probability_father = 0.5,
+                      probability_mother = 0.5,
+                      seed = NULL,
                       update_allele_freq = 0,
                       di_mono_ecious = 2,
-                      inbreed = 1,
-                      diploid = 1,
+                      inbreed = 0,
+                      diploid = 0,
                       polygamy_male = 0,
                       polygamy_female = 0,
                       clone_inference = 1,
@@ -70,7 +68,6 @@ gl2colony <- function(gl = NULL,
                       excluded_paternal_sibships = 0,
                       excluded_maternity_sibships = 0) {
 
-
   if(is.null(gl)){
       stop('Missing Genlight object.')
   }
@@ -84,6 +81,13 @@ gl2colony <- function(gl = NULL,
   if(is.null(loci)){
       stop('Number of loci must be non-zero.')
   } 
+
+  if(is.null(seed)){
+    # random seed oherwise set manually
+      seed <- sample.int(10000, 1)
+  }
+  message(sprintf('Random seed set to %d',seed))
+
 
   x <- parental.ids(gl)
 
@@ -110,7 +114,7 @@ gl2colony <- function(gl = NULL,
   }
 
   # Transform genlight object to structure format
-  message("Exporting Genlight object to COLONY2 format...")
+  message("Exporting Genlight object to COLONY format...")
   str_1row_with0s <- gl2structure(gl)
 
   # Subset structure dataset with offspring
@@ -178,7 +182,7 @@ gl2colony <- function(gl = NULL,
   sink(filename_out, append =TRUE)
   
   ################ 3. Add parents probabilities to COLONY2 file
-  probabilities <- paste(probability_male, probability_female, sep=' ')
+  probabilities <- paste(probability_father, probability_mother, sep=' ')
   n_indv <- paste(n_males, n_females, sep=' ')
   cat('\n')
   cat(probabilities, '\t\t', 
@@ -255,14 +259,14 @@ parental.ids <- function(gen_data) {
   names(indv.metadata) <- tolower(names(indv.metadata))
 
   # Remove leading/trailing white spaces
-  indv.metadata$mother    <- tolower(trim(indv.metadata$mother))
-  indv.metadata$father    <- tolower(trim(indv.metadata$father))
-  indv.metadata$offspring <- tolower(trim(indv.metadata$offspring))
+  indv.metadata$mother    <- tolower(indv.metadata$mother)
+  indv.metadata$father    <- tolower(indv.metadata$father)
+  indv.metadata$offspring <- tolower(indv.metadata$offspring)
   
   # Subset metadata
-  mum_ids  <- indv.metadata[indv.metadata$mother == 'yes', 'id']
-  dad_ids  <- indv.metadata[indv.metadata$father == 'yes', 'id']
-  offs_ids <- indv.metadata[indv.metadata$offspring == 'yes', 'id']
+  mum_ids  <- indv.metadata[indv.metadata$mother    %in% c("yes"," yes", "yes "), 'id']
+  dad_ids  <- indv.metadata[indv.metadata$father    %in% c("yes"," yes", "yes "), 'id']
+  offs_ids <- indv.metadata[indv.metadata$offspring %in% c("yes"," yes", "yes "), 'id']
   
   # Make them vectors
   mum_ids  <- as.vector(na.omit(mum_ids))
@@ -339,6 +343,12 @@ gl2structure <- function(x,
 
 ################################ Example of use ################################
 ##  gl2colony(gl = my.genlight,                                               ##
-##            filename_out = colony2.dat,                                     ##
-##            probability_male = 0.9)                                         ##
+##            filename_out = "colony_example.dat",                            ##  
+##            project_name = "project_fish_rescue",                           ##  
+##            output_name =  "fish_oct_2019",                                 ##
+##            seed = 1234,                                                    ##
+##            probability_father = 0.9,                                       ##
+##            probability_mother = 0.1,                                       ##
+##            inbreed = 1,                                                    ##
+##            diploid = 1)                                                    ##
 ################################################################################
