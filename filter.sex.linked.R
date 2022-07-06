@@ -1,30 +1,39 @@
 ################################################################################
 ##         Function to filter sex-linked SNPs from a genlight object          ##
 ##                                                                            ##
-##  Author: Diana Robledo-Ruiz. Research Fellow, Monash University            ##
+##  Author: Diana A. Robledo-Ruiz. Research Fellow, Monash University         ##
 ##  Date: 2022-06-07                                                          ##
 ##                                                                            ##
-## This function requires:                                                    ##
-##   - Input: a genlight object with sex ("F" or "M") in ind.metrics          ##
+##  This function requires:                                                   ##
+##   - Input: a genlight object with sex ('F' or 'M') in ind.metrics          ##
 ##   - User specified parameters:                                             ##
-##       - system = sex determination system ("zw" or "xy")                   ##
+##       - system = sex determination system ('zw' or 'xy').                  ##
+##                                                                            ##
+##  Output:                                                                   ##
+##   A list with 6 elements:                                                  ##
+##     - Table with calculations (columns) for each loci (rows).              ##
+##     - Genlight object with w-linked/y-linked loci.                         ##
+##     - Genlight object with sex-biased scoring rate loci.                   ##
+##     - Genlight object with z-linked/x-linked loci.                         ##
+##     - Genlight object with zw-gametolog/xy-gametolog loci.                 ##
+##     - Genlight object with autosomal loci.                                 ##
 ##                                                                            ##
 ## Index:                                                                     ##
-##   Line 19: Function                                                        ##
-##   Line 388: Example of use for filter.sex.linked                           ##
+##   Line 28: Function                                                        ##
+##   Line 397: Example of use for filter.sex.linked                           ##
 ################################################################################
 
 
 
 ############################## Defining function ###############################
-filter.sex.linked <- function(gl, system = "zw") {
+filter.sex.linked <- function(gl, system = 'zw') {
   
   # Transform genotypes to matrix and transpose
   gen <- as.data.frame(t(as.matrix(gl)))
   
   # Extract IDs per sex (FUNCTION IGNORES ALL UNSEXED INDS!)
-  ids.F <- gl@other$ind.metrics[gl@other$ind.metrics$sex == "F", "id"]
-  ids.M <- gl@other$ind.metrics[gl@other$ind.metrics$sex == "M", "id"]
+  ids.F <- gl@other$ind.metrics[gl@other$ind.metrics$sex == 'F', 'id']
+  ids.M <- gl@other$ind.metrics[gl@other$ind.metrics$sex == 'M', 'id']
   
   # Subset genotypes by sex
   gen.F <- gen[ , (colnames(gen) %in% ids.F)]
@@ -386,6 +395,6 @@ filter.sex.linked <- function(gl, system = "zw") {
 
 
 ################################ Example of use ################################
-## filtered.data <- filter.sex.linked(gl = my.gl,                             ##
+## filtered.data <- filter.sex.linked(gl = my.genlight,                       ##
 ##                                    system = "xy")                          ##
 ################################################################################
