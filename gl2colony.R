@@ -40,7 +40,7 @@ gl2colony <- function(gl = NULL,
                       update_allele_freq = 0,
                       di_mono_ecious = 2,
                       inbreed = 0,
-                      diploid = 0,
+                      haplodiploid = 0,
                       polygamy_male = 0,
                       polygamy_female = 0,
                       clone_inference = 1,
@@ -95,10 +95,12 @@ gl2colony <- function(gl = NULL,
   mum_ids       <- x$mum
 
   n_offspring <- length(offspring_ids)
-  n_males     <- length(dad_ids)
-  n_females   <- length(mum_ids)
+  n_dads     <- length(dad_ids)
+  n_mums   <- length(mum_ids)
 
-  message(sprintf('%d Mothers detected. \n%d Fathers detected. \n%d Offsprings detected.\n', n_females, n_males, n_offspring))
+  n_total <- n_offspring + n_mums + n_dads
+
+  message(sprintf('%d Offsprings detected. \n%d Fathers detected. \n%d Mothers detected.\n', n_offspring, n_dads, n_mums))
 
   if( !length(dad_ids) ) {
       stop('Missing parenthal IDs.')
@@ -113,7 +115,7 @@ gl2colony <- function(gl = NULL,
   }
 
   # Transform genlight object to structure format
-  message("Exporting Genlight object to COLONY format...")
+  message("Exporting Genlight object to COLONY2 format...")
   str_1row_with0s <- gl2structure(gl)
 
   # Subset structure dataset with offspring
@@ -156,7 +158,7 @@ gl2colony <- function(gl = NULL,
 
   polygamy <- paste(polygamy_male, polygamy_female,sep=' ')
 
-  head.list <- list(n_offspring,loci,seed,update_allele_freq,di_mono_ecious,inbreed,diploid,
+  head.list <- list(n_offspring,loci,seed,update_allele_freq,di_mono_ecious,inbreed,haplodiploid,
                     polygamy,clone_inference,scale_shibship,sibship_prior,known_allele_freq,
                     num_runs,length_run,monitor_method,monitor_interval,windows_gui,likelihood,precision_fl,'',marker_id,
                     marker_type,allelic_dropout,other_typ_err
@@ -182,7 +184,7 @@ gl2colony <- function(gl = NULL,
   
   ################ 3. Add parents probabilities to COLONY2 file
   probabilities <- paste(probability_father, probability_mother, sep=' ')
-  n_indv <- paste(n_males, n_females, sep=' ')
+  n_indv <- paste(n_dads, n_mums, sep=' ')
   cat('\n')
   cat(probabilities, '\t\t', 
       '! Probabilities that the father and mother of an offspring are included in candidates', 
@@ -192,6 +194,7 @@ gl2colony <- function(gl = NULL,
   sink()
   
   ################# 4. Add dads genotypes to COLONY2 file
+  message(sprintf("(%d%%) Working on it...", round(n_offspring*100/n_total,0)))
   write.table(dad_gen,
               file = filename_out,
               append = TRUE,
@@ -203,6 +206,7 @@ gl2colony <- function(gl = NULL,
   sink()
   
   ################# 5. Add mums genotypes to COLONY2 file
+  message(sprintf("(%d%%) Almost there...", round((n_offspring + n_dads)*100/n_total,0)))
   write.table(mum_gen,
               file = filename_out,
               append = TRUE,
@@ -243,7 +247,7 @@ gl2colony <- function(gl = NULL,
   sink()
   
   # Finished
-  cat(crayon::green$bold('COLONY file succesfully exported!'))
+  cat(crayon::green$bold('(100%) COLONY2 file successfully exported!'))
 }
 ################################################################################
 
@@ -342,12 +346,12 @@ gl2structure <- function(x,
 
 ################################ Example of use ################################
 ##  gl2colony(gl = my.genlight,                                               ##
-##            filename_out = "colony_example.dat",                            ##  
-##            project_name = "project_fish_rescue",                           ##  
-##            output_name =  "fish_oct_2019",                                 ##
+##            filename_out = "colony2.dat",                                   ##  
+##            project_name = "parentage_fish_2022",                           ##  
+##            output_name =  "parentage_fish_jul_2022",                       ##
 ##            seed = 1234,                                                    ##
 ##            probability_father = 0.6,                                       ##
 ##            probability_mother = 0.4,                                       ##
 ##            inbreed = 1,                                                    ##
-##            diploid = 1)                                                    ##
+##            haplodiploid = 1)                                               ##
 ################################################################################
