@@ -5,7 +5,7 @@
 ##           Diana A Robledo-Ruiz. Research Fellow, Monash University         ##
 ##  Date: 2022-07-01                                                          ##
 ##                                                                            ##
-##  This function requires:                          ##
+##  This function requires:                                                   ##
 ##   - Input: a genlight object with offspring and parental information       ##
 ##            contained in gl@other$ind.metrics as columns 'offspring',       ##
 ##            'mother' and 'father' taking values 'yes'/'no'.                 ##
@@ -346,8 +346,8 @@ gl2structure <- function(x,
 ##            project_name = "project_fish_rescue",                           ##  
 ##            output_name =  "fish_oct_2019",                                 ##
 ##            seed = 1234,                                                    ##
-##            probability_father = 0.9,                                       ##
-##            probability_mother = 0.1,                                       ##
+##            probability_father = 0.6,                                       ##
+##            probability_mother = 0.4,                                       ##
 ##            inbreed = 1,                                                    ##
 ##            diploid = 1)                                                    ##
 ################################################################################
