@@ -26,7 +26,6 @@
 ##    Line 339: Example of use for gl2colony                                  ##
 ################################################################################
 
-
 ######################## Define MAIN function gl2colony ########################
 library(crayon)
 
@@ -343,7 +342,6 @@ gl2structure <- function(x,
 }
 ################################################################################
 
-
 ################################ Example of use ################################
 ##  gl2colony(gl = my.genlight,                                               ##
 ##            filename_out = "colony2.dat",                                   ##  
@@ -352,6 +350,7 @@ gl2structure <- function(x,
 ##            seed = 1234,                                                    ##
 ##            probability_father = 0.6,                                       ##
 ##            probability_mother = 0.4,                                       ##
-##            inbreed = 1,                                                    ##
-##            haplodiploid = 1)                                               ##
+##            update_allele_freq = 1,                                         ##
+##            allelic_dropout = '0.01@',                                      ##
+##            other_typ_err = '0.001@')                                       ##
 ################################################################################
