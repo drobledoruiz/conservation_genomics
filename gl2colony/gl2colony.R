@@ -82,7 +82,7 @@ gl2colony <- function(gl = NULL,
 
   if(is.null(seed)){
     # random seed oherwise set manually
-      seed <- sample.int(10000, 1)
+      seed <- sample.int(65535, 1)
   }
   message(sprintf('Random seed set to %d',seed))
 

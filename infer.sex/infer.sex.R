@@ -21,7 +21,7 @@ infer.sex <- function(  gl_sex_filtered,
                         seed=NULL) {
   if(is.null(seed)){
   # random seed oherwise set manually
-      seed <- sample.int(10000, 1)
+      seed <- sample.int(65535, 1)
   }
 
   w   <-  W.sex(gl_sex_filtered[[2]],   system = system)

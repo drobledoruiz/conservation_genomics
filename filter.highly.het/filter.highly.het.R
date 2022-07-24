@@ -3,7 +3,7 @@
 ##  based on the Chi-Square tests for Hardy-Weinberg equilibrium.                     ##
 ##                                                                                    ##
 ##     Recieves as argument:                                                          ##
-##       * gl_autosom_filtered <-   Sex-filtered automal genlight object    .         ##
+##       * gl_autosom_filtered <-   Sex-filtered automal genlight object.             ##
 ##       * Yates (optional)    <-   Boolean for Yates's continuity correction.        ##
 ##                                                                                    ##
 ##     Output:                                                                        ##

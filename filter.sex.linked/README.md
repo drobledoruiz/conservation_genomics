@@ -1,4 +1,4 @@
-# Function _filter.sex.linked
+# filter.sex.linked
 
 It identifies four types of sex-linked loci using individuals with assigned sex. 
 
@@ -30,7 +30,7 @@ The function works in 2 phases:
 1. Use loci scoring rate per sex to identify w-linked/y-linked loci and loci with sex-biased scoring rate.
 2. Use the proportion of heterozygous males and females per loci to identify z-linked/x-linked loci and zw-gametologs.
 
-Phase 1:
+**Phase 1:**
   1. It creates a Results Table with loci in rows.
   2. It adds columns 'count.F.miss' and 'count.M.miss' with counts of the number of females and males with NA (missing data) for each locus, respectively.
   3. It adds columns 'count.F.scored' and 'count.M.scored' with counts of the number of females and males scored (0, 1 or 2) for each locus, respectively.
@@ -41,7 +41,7 @@ Phase 1:
   8. It adds column 'sex.biased' in which a locus is signalled as having sex-biased scoring rate (TRUE) if its adjusted p-value is smaller or equal to 0.01 and it has not been signalled as w-linked/y-linked.
   9. It outputs the same plot as step 6 but removing w-linked/y-linked and sex-biased scoring rate loci. This is the AFTER filtering plot and should have only loci (points) that are roughly in the diagonal line.
   
-  Phase 2:
+**Phase 2:**
   1. It adds columns 'count.F.het' and 'count.M.het' with counts of the number of females and males scored as heterozygotes (scored '1') for each locus, respectively.
   2. It adds columns 'count.F.hom' and 'count.M.hom' with counts of the number of females and males scored as homozygotes ('0' or '2') for each locus, respectively.
   3. It builds a contingency table and performs a Fisher's exact test to test for the independence of heterozygosity and sex per locus. It then adds to the Results Table a column with the Fisher's exact test estimate (column 'stat') and its respective p-value (column 'stat.p.value'). The rationale is that autosomal loci should present no difference in heterozygosity rate between the sexes, and therefore, a locus in which heterozygosity is biased by sex (i.e. there are significantly more or fewer heterozygote individuals from one sex than the other sex) is likely to be sex-linked.

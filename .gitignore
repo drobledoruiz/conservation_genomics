@@ -1,3 +1,4 @@
 .Rhistory
 data/
-test.Rmd
+**.Rmd
+**.md.backup
