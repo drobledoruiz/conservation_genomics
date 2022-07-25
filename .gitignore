@@ -1,4 +1,5 @@
 .Rhistory
 data/
+.RData
 **.Rmd
 **.md.backup

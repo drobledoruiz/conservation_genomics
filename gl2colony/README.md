@@ -74,6 +74,7 @@ We refer the user to the [Colony2 user manual](https://usermanual.wiki/Document/
 
 - [crayon](https://cran.r-project.org/web/packages/crayon/index.html)
 
+
 ## Intructions
 
 To use the function *gl2colony* it is necesary to load the file *gl2colony.R*:
