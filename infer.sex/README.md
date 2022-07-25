@@ -37,7 +37,7 @@ ind3       F      0     180      F     203   579      M     180   239   *F
 ind4       F     12     114      M      7    776      M     156   248   *M
 ```
 
-The proportion of #NA and #scores in the Y-test suggests ind1 is a female. Because the X-test and XY-test also suggest ind1 is a female the sex of the individual is reported as female (F) on column "SEX". Analogously for ind2 the three test suggest is a male. However for ind3 Y-test and X-test suggest a female but XY-test suggest a male. Similarly for ind4 X-test and XY-test suggest a male but Y-test suggest a female. In these cases the sex is reported as possible female (*F) for ind3 and possible male (*M).
+The proportion of #NA and #scores in the Y-test suggests ind1 is a female. Because the X-test and XY-test also suggest ind1 is a female the sex of the individual is reported as female (F) on column "SEX". Analogously for ind2 the three test suggest is a male. However for ind3 Y-test and X-test suggest a female but XY-test suggest a male. Similarly for ind4 X-test and XY-test suggest a male but Y-test suggest a female. In these cases the sex is reported as probable female (*F) for ind3 and probable male (*M) for ind4.
 
 ---------------------------------------------------------------------------
 Contact:
