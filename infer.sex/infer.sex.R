@@ -21,13 +21,22 @@ infer.sex <- function(  gl_sex_filtered,
                         seed=NULL) {
   if(is.null(seed)){
   # random seed oherwise set manually
-      seed <- sample.int(65535, 1)
-  }
+      seed <- sample.int(65535, 1)}
 
-  w   <-  W.sex(gl_sex_filtered[[2]],   system = system)
-  z   <-  Z.sex(gl_sex_filtered[[4]],   system = system, seed=seed)
-  zwg <-  ZWg.sex(gl_sex_filtered[[5]], system = system, seed=seed)  
-  A   <- data.frame(w,z,zwg)
+
+if(system == "xy"){ 
+  gl1 <- gl_sex_filtered$y.linked
+  gl2 <- gl_sex_filtered$x.linked}
+if(system == "zw"){
+  gl1 <- gl_sex_filtered$w.linked
+  gl2 <- gl_sex_filtered$z.linked}
+
+gl3 <- gl_sex_filtered$gametolog
+
+  w   <-  W.sex(  gl1, system = system)
+  z   <-  Z.sex(  gl2, system = system, seed=seed)
+  zwg <-  ZWg.sex(gl3, system = system, seed=seed)  
+  A   <-  data.frame(w,z,zwg)
 
   Fun<- function(x,y,z){
     d <- c(x,y,z) 

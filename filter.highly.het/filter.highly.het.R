@@ -27,6 +27,17 @@ n0 <- rowSums(gen == 0, na.rm = TRUE)
 n1 <- rowSums(gen == 1, na.rm = TRUE)
 n2 <- rowSums(gen == 2, na.rm = TRUE)
 table <- data.frame(n0=n0,n1=n1,n2=n2,Hobs=n1/(n0+n1+n2))
+
+fho <- (n0+n2)/(n0+n1+n2)
+fhe <- n1/(n0+n1+n2)
+
+plt.BEF <- plot(x = fho, 
+                y = fhe,
+                main = "BEFORE",
+                xlab = "fraction of Hom",
+                ylab = "fraction of Het",
+                xlim = c(0, 1),
+                ylim = c(0, 1))
 #-----------------------------------------------------
 HWchsq <- function(n0,n1,n2,cc){
   n <- n0+n1+n2
@@ -72,8 +83,26 @@ table.filter$p.adjusted <- p.adjust(table.filter$p.value, method = "fdr")
 
 # Keep in HetTable only values with p.adjusted <= 0.05 and ObsHet >= ExpHet
 table.filter <- table.filter[table.filter$p.adjusted<= 0.05 & table.filter$n1>=table.filter$En1,]
-#-----------------------------------------------------
-return(list('filtered.gl'=gl[,!(gl$loc.names %in% rownames(table.filter))],
+gl.filter <- gl[,!(gl$loc.names %in% rownames(table.filter))]
+#-----------------------------------------------------------------------------
+
+gen <- as.data.frame(t(as.matrix(gl.filter)))
+n0 <- rowSums(gen == 0, na.rm = TRUE)
+n1 <- rowSums(gen == 1, na.rm = TRUE)
+n2 <- rowSums(gen == 2, na.rm = TRUE)
+
+fho <- (n0+n2)/(n0+n1+n2)
+fhe <- n1/(n0+n1+n2)
+
+plt.AFT <- plot(x = fho, 
+                y = fhe,
+                main = "AFTER",
+                xlab = "fraction of Hom",
+                ylab = "fraction of Het",
+                xlim = c(0, 1),
+                ylim = c(0, 1))
+#-------------------------------------------------------------------------------
+return(list('filtered.gl'= gl.filter,
             'highly.het.loci'=table.filter))
 }
 ######################################################################
