@@ -1,56 +1,62 @@
 # filter.highly.het
 
-A function to filter highly heterozygous loci based on Chi-Square tests for Hardy-Weinberg equilibrium. 
+A function to filter out highly-heterozygous loci. This function considers a locus as highly-heterozygous if it (i) presents an heterozygosity > 0.5, AND (ii) presents a significant excess of observed heterozygous individuals from those expected according to Hardy-Weinberg equilibrium. 
 
 This function requires as input:
 
-- **gl_autosom_filtered** --   A sex-filtered automal genlight object. This is the sixth element of the list created by the function filter.sex.linked.
+- **gl** - A genlight object.
 
-- **Yates** -- Boolean (optional), to use Yates's continuity correction. *Set to FALSE by default.*
+- **Yates** - Boolean (optional), to use Yates's continuity correction. Recommended for sample sizes < 20. *Set to FALSE by default.*
+
+This function produces as output:
+
+- A dataframe with information about highly-heterozygous loci (filtered out loci).
+
+- A genlight object without highly-heterozygous loci.
 
 
-## Intructions
+## Usage
 
-To use the function *infer.sex* it is necesary to load the file *ifilter.highly.het.R*:
+To use the function it is necesary to load the file *filter.highly.het.R*:
 
 ```
 source('/path_to_function/filter.highly.het.R')
 ```
 
-then the function can be called. Here we show an example of its use: 
+Then the function can be called:
 
 ```
-het.filtered.gl  <- filter.highly.het(  gl_autosom,           
-                                        Yates = TRUE) 
+filtered.data <- filter.highly.het(gl = my.genlight,           
+                                   Yates = TRUE) 
 ```
 
-The object *het.filtered.gl* contains two elements:
+The output *filtered.data* contains two elements that can be called as:
 
-- **het.filtered.gl$filtered.gl**  --  The original (gl_autosom) genlight object without the highly heterozygous loci.         
-- **het.filtered.gl$highly.het.loci** --  DataFrame with information about the removed loci.
+- **filtered.data$results.table** - Dataframe with information about highly-heterozygous loci (filtered out loci).
+- **filtered.data$filtered.gl** - Genlight object without highly-heterozygous loci.
 
-Tha DataFrame *het.filtered.gl$highly.het.loci* has the folowing structure:
+The results table has the folowing structure:
 
 ```
            n0   n1  n2   Hobs   en0     en1     en2    Hexp  chsq   p.value   p.adjusted
-locus     284  524  77   0.59  336.85  418.29  129.85  0.47  56.52  5.56-14   1.15e-13
+locus1    284  524  77   0.59  336.85  418.29  129.85  0.47  56.52  5.56-14   1.15e-13
 ```
 
-wiht the columns meaning:
+With columns meaning:
 
-- **n0** -- Number of **AA** genotypes.
-- **n1** -- Number of **Aa** genotypes.
-- **n2** -- Number of **aa** genotypes.
-- **Hobs** -- Observed proportion of heterozygous.
-- **en0** -- Expected value for the number of **AA** genotypes.
-- **en1** -- Expected value for the number of **Aa** genotypes.
-- **en2** -- Expected value for the number of **aa** genotypes.
-- **Hexp** -- Expected proportion of heterozygous.
-- **chsq** -- Value of chi-square for these genotype proportions. 
-- **p.value** -- P-value corresponding to the chi-square value.
-- **p.adjusted** -- Adjusted p-value.
+- **n0** -- Observed number of homozygous reference individuals.
+- **n1** -- Observed number of heterozygous individuals.
+- **n2** -- Observed number of homozygous alternate individuals.
+- **Hobs** -- Observed heterozygosity (proportion of heterozygous individuals).
+- **en0** -- Expected number of homozygous reference individuals according to HW equilibrium.
+- **en1** -- Expected number of heterozygous individuals according to HW equilibrium.
+- **en2** -- Expected number of homozygous alternate individuals according to HW equilibrium.
+- **Hexp** -- Expected heterozygosity (proportion of heterozygous individuals).
+- **chsq** -- Chi-square statistic for the deviation of observed genotypes from the expected genotypes. 
+- **p.value** -- P-value for the chi-square statistic.
+- **p.adjusted** -- P-value adjusted for false discovery rate.
 
-In this case the adjusted p-value is significantly smaller than 0.05. Hence this locus would be considered highly heterozygous and would be removed from the genlight object.
+In the example the adjusted p-value for locus1 is < 0.05. Hence, it is considered highly-heterozygous and is removed from the filtered genlight object.
 
 
 ---------------------------------------------------------------------------
