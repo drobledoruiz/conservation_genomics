@@ -1,28 +1,27 @@
-###################################################################################
-##         Function to filter sex-linked SNPs from a genlight object             ##
-##                                                                               ##
-##  Author: Diana A. Robledo-Ruiz. Research Fellow, Monash University            ##
-##  Date: 2022-06-07                                                             ##
-##                                                                               ##
-##  This function requires:                                                      ##
-##   - Input: a genlight object with sex ('F' or 'M') in ind.metrics             ##
-##   - User specified parameters:                                                ##
-##       - system = sex determination system ('zw' or 'xy').                     ##
-##                                                                               ##
-##  Output:                                                                      ##
-##   A list with 6 elements:                                                     ##
-##    - $calculations -> Table with calculations (columns) for each loci (rows). ##
-##    - $w.linked     -> Genlight object with w-linked/y-linked loci.            ##
-##    - $sex.biased   -> Genlight object with sex-biased scoring rate loci.      ##
-##    - $z.linked     -> Genlight object with z-linked/x-linked loci.            ##
-##    - $gametolog    -> Genlight object with zw-gametolog/xy-gametolog loci.    ##
-##    - $autosomal    -> Genlight object with autosomal loci.                    ##
-##                                                                               ##
-## Index:                                                                        ##
-##   Line 28: Function                                                           ##
-##   Line 397: Example of use for filter.sex.linked                              ##
-###################################################################################
-
+################################################################################
+##         Function to filter sex-linked SNPs from a genlight object          ##
+##                                                                            ##
+##  Author: Diana A. Robledo-Ruiz. Research Fellow, Monash University         ##
+##  Date: 2022-06-07                                                          ##
+##                                                                            ##
+##  This function requires:                                                   ##
+##   - Input: a genlight object with column 'sex' ('F' or 'M') in ind.metrics ##
+##   - User specified parameters:                                             ##
+##       - system = sex determination system ('zw' or 'xy').                  ##
+##                                                                            ##
+##  Output:                                                                   ##
+##   A list with 6 elements:                                                  ##
+##    - $results.table -> Table with statistics (columns) for each loci (rows)##
+##    - $w.linked      -> Genlight object with w-linked/y-linked loci         ##
+##    - $sex.biased    -> Genlight object with sex-biased scoring rate loci   ##
+##    - $z.linked      -> Genlight object with z-linked/x-linked loci         ##
+##    - $gametolog     -> Genlight object with zw-gametolog/xy-gametolog loci ##
+##    - $autosomal     -> Genlight object with autosomal loci                 ##
+##                                                                            ##
+## Index:                                                                     ##
+##   Line 27: Function                                                        ##
+##   Line 409: Example of use for filter.sex.linked                           ##
+################################################################################
 
 
 ############################## Defining function ###############################
@@ -383,7 +382,9 @@ filter.sex.linked <- function(gl, system = 'zw') {
   gl.autosomal <- gl[ , autosomal]
   gl.autosomal@other$loc.metrics <- gl.autosomal@other$loc.metrics[autosomal, ]
   
-
+  
+  
+#################### 4. Output
 if(system == "xy"){ 
   rlist <- list(  "results.table" = table,
                   "y.linked"      = A,
@@ -391,6 +392,7 @@ if(system == "xy"){
                   "x.linked"      = C,
                   "gametolog"     = D,
                   "autosomal"     = gl.autosomal)}
+  
 if(system == "zw"){
   rlist <- list(  "results.table" = table,
                   "w.linked"      = A,

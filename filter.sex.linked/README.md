@@ -20,12 +20,56 @@ This function produces as output:
       3. A plot BEFORE filtering sex-linked loci by heterozygosity.
       4. A plot AFTER filtering sex-linked loci by heterozygosity.
 
-Usage:
+## Usage
 ```
 filtered.data <- filter.sex.linked(gl = my.genlight,
                                    system = "xy")
 ```
 
+The output *filtered.data* contains 6 elements that can be called as:
+
+   - **filtered.data$results.table** - Dataframe with information about highly-heterozygous loci (filtered out loci).
+   - **filtered.data$w.linked** or **filtered.data$y.linked** - Genlight object with w-linked/y-linked loci.
+   - **filtered.data$sex.biased**    - Genlight object with sex-biased scoring rate loci.
+   - **filtered.data$z.linked** or **filtered.data$x.linked**     - Genlight object with z-linked/x-linked loci.
+   - **filtered.data$gametolog**     - Genlight object with zw-gametolog/xy-gametolog loci.
+   - **filtered.data$autosomal**     - Genlight object with autosomal loci.
+
+The results table has the folowing structure:
+```
+                index  count.F.miss  count.M.miss  count.F.scored  count.M.scored  ratio    p.value  p.adjusted   scoringRate.F  scoringRate.M  w.linked  sex.biased  count.F.het  count.M.het  count.F.hom  count.M.hom       stat   stat.p.value   stat.p.adjusted  heterozygosity.F  heterozygosity.M  z.linked  zw.gametolog
+28689726-20-T/A     1             0             0             173             224      0  1.0000000           1       1.0000000      1.0000000     FALSE       FALSE          119          157           54           67  0.9405887     0.82619338         1.0000000         0.6878613         0.7008929     FALSE         FALSE
+```
+
+With loci being in rows and columns meaning:
+
+- **index** - Index number to identify loci.
+- **count.F.miss** - Count of females that have this locus as missing data (NA).
+- **count.M.miss** - Count of males that have this locus as missing data (NA).
+- **count.F.scored** - Count of females that have this locus scored (0, 1 or 2; i.e. non-missing).
+- **count.M.scored** - Count of males that have this locus scored (0, 1 or 2; i.e. non-missing).
+- **ratio** - Fisher's exact test estimate testing for the independence of scoring rate and sex for this locus.
+- **p.value** - P-value for the Fisher's exact test estimate.
+- **p.adjusted** - P-value adjusted for false discovery rate.
+- **scoringRate.F** - Female scoring rate (proportion of females that were scored for this locus). This is the x-axis in the 1st and 2nd plot.
+- **scoringRate.M** - Male scoring rate (proportion of males that were scored for this locus). This is the y-axis in the 1st and 2nd plot.
+- **w.linked** - Boolean for this locus being w-linked.
+- **sex.biased** - Boolean for this locus having sex-biased scoring rate.
+
+- **count.F.het** - Count of females that are heterozygous for this locus.
+- **count.M.het** - Count of males that are heterozygous for this locus.
+- **count.F.hom** - Count of females that are homozygous for this locus.
+- **count.M.hom** - Count of males that are homozygous for this locus.
+- **stat** - Fisher's exact test estimate testing for the independence of heterozygosity and sex for this locus.
+- **stat.p.value** - P-value for the Fisher's exact test estimate.
+- **stat.p.adjusted** - P-value adjusted for false discovery rate.
+- **heterozygosity.F** - Female heterozygosity (proportion of females that were heterozygotes for this locus). This is the x-axis in the 3rd and 4th plot.
+- **heterozygosity.M** - Male heterozygosity (proportion of males that were heterozygotes for this locus). This is the y-axis in the 3rd and 4th plot.
+- **z.linked** - Boolean for this locus being z-linked.
+- **zw.gametolog** - Boolean for this locus being a zw-gametolog.
+
+
+## How the function works
 The function works in 2 phases:
 1. Use loci scoring rate per sex to identify w-linked/y-linked loci and loci with sex-biased scoring rate.
 2. Use the proportion of heterozygous males and females per loci to identify z-linked/x-linked loci and zw-gametologs.
@@ -50,3 +94,9 @@ The function works in 2 phases:
   6. It adds column 'z.linked' in which a locus is signalled as z-linked (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous males is greater than the proportion of heterozygous females (because females only have one Z chromosome). Or it adds column 'x.linked' in which a locus is signalled as x-linked (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous females is greater than the proportion of heterozygous males (because males only have one X chromosome).
   7. It adds column 'zw.gametolog' in which a locus is signalled as zw-gametolog (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous males is smaller than the proportion of heterozygous females. Or it adds column 'xy.gametolog' in which a locus is signalled as xy-gametolog (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous females is smaller than the proportion of heterozygous males.
   8. It outputs the same plot as step 5 but removing z-linked/x-linked and gametolog loci. This is the AFTER filtering plot and should have only loci (points) that are roughly in the diagonal line.
+  
+  
+---------------------------------------------------------------------------
+Contact:
+- Diana Robledo-Ruiz, diana.robledoruiz1@monash.edu
+- Jesus Castrejon-Figueroa, jcastrejon@ciencias.unam.mx
