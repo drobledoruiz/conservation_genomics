@@ -56,7 +56,7 @@ With columns meaning:
 - **p.value** -- P-value for the chi-square statistic.
 - **p.adjusted** -- P-value adjusted for false discovery rate.
 
-In the example the adjusted p-value for locus1 is < 0.05. Hence, it is considered highly-heterozygous and is removed from the filtered genlight object.
+In the example above, locus1 exhibits (i) an heterozygosity > 0.5, and (ii) an adjusted p-value <= 0.05, which means that the excess of observed heterozygous individuals is significant (n1 > en1). Hence, this locus is considered highly-heterozygous and is removed from the filtered genlight object.
 
 
 ---------------------------------------------------------------------------
