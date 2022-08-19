@@ -100,6 +100,9 @@ filter.highly.het <- function(gl, Yates = FALSE){
   # Remove highly-het loci from new filtered gl
   gl.filter <- gl[, !(gl$loc.names %in% rownames(table.filter))]
   
+  # Remove highly-het loci from new gl loci metadata
+  gl.filter@other$loc.metrics <- gl@other$loc.metrics[!(gl$loc.names %in% rownames(table.filter)), ]
+  
   ################## 5. AFTER plot with filtered gl
   gen <- as.data.frame(t(as.matrix(gl.filter)))
   n0 <- rowSums(gen == 0, na.rm = TRUE)
