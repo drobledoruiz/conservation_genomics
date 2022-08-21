@@ -28,17 +28,27 @@ filter.highly.het <- function(gl, Yates = FALSE){
   }
   
   ################# 1. Start results table with observed data and BEFORE plot
-  gen <- as.data.frame(t(as.matrix(gl)))
-  n0 <- rowSums(gen == 0, na.rm = TRUE)
-  n1 <- rowSums(gen == 1, na.rm = TRUE)
-  n2 <- rowSums(gen == 2, na.rm = TRUE)
-  table <- data.frame(n0 = n0, 
-                      n1 = n1,
-                      n2 = n2, 
-                      Hobs = n1/(n0+n1+n2))
-  
-  fho <- (n0+n2)/(n0+n1+n2)
-  fhe <- n1/(n0+n1+n2)
+populations <- as.vector(unique(gl@other$ind.metrics$pop))
+n0<-vector()
+n1<-vector()
+n2<-vector()
+pops<-vector()
+loci=vector()
+for(pop in populations){ 
+  pop.gl <- gl[gl@other$ind.metrics$pop == pop,]
+  gen <- as.data.frame(t(as.matrix(pop.gl)))  
+  n0 <- c(n0,rowSums(gen == 0, na.rm = TRUE))
+  n1 <- c(n1,rowSums(gen == 1, na.rm = TRUE))
+  n2 <- c(n2,rowSums(gen == 2, na.rm = TRUE))
+  loci <- c(loci,rownames(gen))
+  pops <- c(pops,rep(pop,dim(gen)[[1]]))  
+}
+
+table <- data.frame(loci=loci,pop=pops, n0=n0,n1=n1,n2=n2,Hobs=n1/(n0+n1+n2))
+
+fho <- (n0+n2)/(n0+n1+n2)
+fhe <- n1/(n0+n1+n2)
+
   
   plt.BEF <- plot(x = fho, 
                   y = fhe,
@@ -88,7 +98,7 @@ filter.highly.het <- function(gl, Yates = FALSE){
   }
   
   ################## 4. Apply chsq test only to loci with Het > 50%
-  table.filter <- table[table$Hobs >= 0.5,] 
+  table.filter <- na.omit(table[table$Hobs >= 0.5,] )
   table.filter <- HW.chsqtest(table.filter, cc=cc)
   
   # Adjust p-values
@@ -96,12 +106,12 @@ filter.highly.het <- function(gl, Yates = FALSE){
   
   # Keep in table only loci p.adj <= 0.05 and ObsHet >= ExpHet
   table.filter <- table.filter[table.filter$p.adjusted<= 0.05 & table.filter$n1>=table.filter$En1,]
-  
+  rownames(table.filter )<-1:nrow(table.filter)  
   # Remove highly-het loci from new filtered gl
-  gl.filter <- gl[, !(gl$loc.names %in% rownames(table.filter))]
+  gl.filter <- gl[, !(gl$loc.names %in% table.filter$loci )]
   
   # Remove highly-het loci from new gl loci metadata
-  gl.filter@other$loc.metrics <- gl@other$loc.metrics[!(gl$loc.names %in% rownames(table.filter)), ]
+  gl.filter@other$loc.metrics <- gl@other$loc.metrics[!(gl$loc.names %in% table.filter$loci ), ]
   
   ################## 5. AFTER plot with filtered gl
   gen <- as.data.frame(t(as.matrix(gl.filter)))

@@ -44,6 +44,7 @@ locus1    284  524  77   0.59  336.85  418.29  129.85  0.47  56.52  5.56-14   1.
 
 With columns meaning:
 
+- **pop** -- Name of the population.
 - **n0** -- Observed number of homozygous reference individuals.
 - **n1** -- Observed number of heterozygous individuals.
 - **n2** -- Observed number of homozygous alternate individuals.
