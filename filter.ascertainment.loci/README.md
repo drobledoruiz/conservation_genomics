@@ -1,6 +1,6 @@
 # filter.ascertainment.loci
 
-It reduces the ascertainment bias product of unequal sampling size for different populations. By definition, reduced-representation sequencing (RRS) 
+This function reduces the ascertainment bias product of unequal sampling size for different populations. By definition, reduced-representation sequencing (RRS) 
 identifies variable loci present in a sample of individuals. If the sample contains individuals from more than one population, and the sample size for one 
 population is larger (e.g. n1 = 20, n2 = 40), there will be loci that are polymorphic only in the larger population simply because rare alleles are more
 likely to be found the more individuals are included in a sample (i.e. ascertainment bias). This function reduces this form of ascertainment bias by 
