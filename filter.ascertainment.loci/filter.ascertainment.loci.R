@@ -14,10 +14,12 @@
 ##  Output:                                                                   ##
 ##    $filtered.gl   - Genlight object without ascertainment loci (removed)   ##
 ##    $removed.loci  - Vector with names of the removed (ascertainment) loci  ##
+##    $results.table - Per pop sample size, no. polymorphic loci before       ##
+##                     filtering, and no. polymorphic loci after filtering    ##
 ##                                                                            ##
 ##  Index:                                                                    ##
-##    Line 24:  Function filter.ascertainment.loci                            ##
-##    Line 183: Example of use for filter.highly.het                          ##
+##    Line 26:  Function filter.ascertainment.loci                            ##
+##    Line 199: Example of use for filter.highly.het                          ##
 ################################################################################
 
 
@@ -50,8 +52,9 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
   # Make plot of population sizes
   barplot(n.pop,
           names.arg = levels(df$pop),
+          las = 2,  # vertical names 
           xlab = "Populations",
-          ylab = "Population size",
+          ylab = "Sample size",
           col = rainbow(nlevels(df$pop)))
   
   ########################### 2. Id ind to subsample
@@ -65,7 +68,7 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
   
   df$keep <- "drop"
   
-  for (i in 1:length(levels(df$pop))) {
+  for (i in 1:nlevels(df$pop)) {
     
     # Subset by pop
     tmp <- df[df$pop == levels(df$pop)[i], ]
@@ -144,6 +147,7 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
   # Make BEFORE plot
   barplot(before.poly.pop,
           names.arg = levels(df$pop),
+          las = 2,  # vertical names 
           xlab = "Populations",
           ylab = "# polymorphic loci",
           main = "BEFORE filtering",
@@ -164,18 +168,30 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
     after.poly.pop <- c(after.poly.pop, ncol(gen)-length(id.mono(subgen)$index))
   }
   
-  # Make BEFORE plot
+  # Make AFTER plot
   barplot(after.poly.pop,
           names.arg = levels(df$pop),
+          las = 2,  # vertical names 
           xlab = "Populations",
           ylab = "# polymorphic loci",
           main = "AFTER filtering",
           col = rainbow(nlevels(df$pop)))
   
   
-  ############################## 7. Return output 
+  ############################## 7. Create table 
+  results.table <- as.data.frame(matrix(c(n.pop, before.poly.pop, after.poly.pop),
+                                        nrow = 3,
+                                        byrow = TRUE))
+  
+  colnames(results.table) <- levels(df$pop)
+  rownames(results.table) <- c("Sample size", 
+                               "# poly before", 
+                               "# poly after")
+  
+  ############################## 8. Return output 
   return(list("filtered.gl" = gl2,
-              "removed.loci" = loci2drop$names))
+              "removed.loci" = loci2drop$names,
+              "results.table" = results.table))
 }
 ################################################################################
 
@@ -186,4 +202,5 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
 ##                                       n = 50)                              ##
 ## new.data$filtered.gl                                                       ##
 ## new.data$removed.loci                                                      ##
+## new.data$results.table                                                     ##
 ################################################################################
