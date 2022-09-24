@@ -58,6 +58,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
   table$ratio   <- NA
   table$p.value <- NA
   
+  message("Working on it.")
+  
   # Apply Fisher's exact test (because there are observations with less than 5)
   for (i in 1:nrow(table)) {
     
@@ -126,14 +128,15 @@ filter.sex.linked <- function(gl, system = 'zw') {
     }
   }
 
+  message("Creating call rate plots.")
   
   ##### 1.3 Plot BEFORE vs AFTER
   if(system == "zw") { 
     BEF.mis <- plot(x = table$scoringRate.F, 
                     y = table$scoringRate.M,
                     main = "BEFORE",
-                    xlab = "Scoring rate Females",
-                    ylab = "Scoring rate Males",
+                    xlab = "Call rate Females",
+                    ylab = "Call rate Males",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
     
@@ -142,8 +145,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
                     y = table[table$w.linked == FALSE & table$sex.biased == FALSE, 
                               "scoringRate.M"],
                     main = "AFTER",
-                    xlab = "Scoring rate Females",
-                    ylab = "Scoring rate Males",
+                    xlab = "Call rate Females",
+                    ylab = "Call rate Males",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
   }
@@ -152,8 +155,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
     BEF.mis <- plot(x = table$scoringRate.F, 
                     y = table$scoringRate.M,
                     main = "BEFORE",
-                    xlab = "Scoring rate Females",
-                    ylab = "Scoring rate Males",
+                    xlab = "Call rate Females",
+                    ylab = "Call rate Males",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
     
@@ -162,8 +165,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
                     y = table[table$y.linked == FALSE & table$sex.biased == FALSE, 
                               "scoringRate.M"],
                     main = "AFTER",
-                    xlab = "Scoring rate Females",
-                    ylab = "Scoring rate Males",
+                    xlab = "Call rate Females",
+                    ylab = "Call rate Males",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
   }
@@ -184,6 +187,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
   # Add empty columns for statistic and corresponding p-value
   table$stat         <- NA
   table$stat.p.value <- NA
+  
+  message("Done with call rate plots.")
   
   # Apply test
   for (i in 1:nrow(table)) {
@@ -231,6 +236,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
       }
     }
   }
+  
+  message("Creating heterozygosity plots.")
   
   # Adjust p-values for multiple comparisons (False discovery rate, least conservative)
   table$stat.p.adjusted <- p.adjust(table$stat.p.value, method = "fdr")
@@ -336,7 +343,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
                     ylim = c(0, 1))
   }
   
-  
+  message("Done with heterozygosity plots.")
   
   #################### 3. Create output of function
   ##### 3.1 Save the indices of each category of loci to later subset gl
@@ -351,6 +358,14 @@ filter.sex.linked <- function(gl, system = 'zw') {
                        table$sex.biased   == FALSE &
                        table$z.linked     == FALSE &
                        table$zw.gametolog == FALSE, "index"]
+    
+    message("Done analyzing ", nrow(table), " loci.\n",
+            "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
+            length(a), " Y-linked loci\n",
+            length(b), " sex-biased loci\n",
+            length(c), " X-linked loci\n",
+            length(d), " XY gametolog loci.\n",
+            "And ", length(autosomal), " autosomal loci.")
   }
   
   if(system == "xy") {  
@@ -363,6 +378,14 @@ filter.sex.linked <- function(gl, system = 'zw') {
                        table$sex.biased   == FALSE &
                        table$x.linked     == FALSE &
                        table$xy.gametolog == FALSE, "index"]
+    
+    message("Done analyzing ", nrow(table), " loci.\n",
+            "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
+            length(a), " Y-linked loci\n",
+            length(b), " sex-biased loci\n",
+            length(c), " X-linked loci\n",
+            length(d), " XY gametolog loci.\n",
+            "And ", length(autosomal), " autosomal loci.")
   }
   
   
