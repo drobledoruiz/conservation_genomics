@@ -20,7 +20,7 @@
 ##                                                                            ##
 ## Index:                                                                     ##
 ##   Line 27: Function                                                        ##
-##   Line 409: Example of use for filter.sex.linked                           ##
+##   Line 432: Example of use for filter.sex.linked                           ##
 ################################################################################
 
 
@@ -58,7 +58,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
   table$ratio   <- NA
   table$p.value <- NA
   
-  message("Working on it.")
+  message("Starting phase 1. May take a while...")
   
   # Apply Fisher's exact test (because there are observations with less than 5)
   for (i in 1:nrow(table)) {
@@ -128,7 +128,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
     }
   }
 
-  message("Creating call rate plots.")
+  message("Building call rate plots.")
   
   ##### 1.3 Plot BEFORE vs AFTER
   if(system == "zw") { 
@@ -188,7 +188,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
   table$stat         <- NA
   table$stat.p.value <- NA
   
-  message("Done with call rate plots.")
+  message("Done building call rate plots. Starting phase 2.")
   
   # Apply test
   for (i in 1:nrow(table)) {
@@ -237,7 +237,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
     }
   }
   
-  message("Creating heterozygosity plots.")
+  message("Building heterozygosity plots.")
   
   # Adjust p-values for multiple comparisons (False discovery rate, least conservative)
   table$stat.p.adjusted <- p.adjust(table$stat.p.value, method = "fdr")
@@ -343,7 +343,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
                     ylim = c(0, 1))
   }
   
-  message("Done with heterozygosity plots.")
+  message("Done building heterozygosity plots.")
   
   #################### 3. Create output of function
   ##### 3.1 Save the indices of each category of loci to later subset gl
@@ -359,12 +359,12 @@ filter.sex.linked <- function(gl, system = 'zw') {
                        table$z.linked     == FALSE &
                        table$zw.gametolog == FALSE, "index"]
     
-    message("Done analyzing ", nrow(table), " loci.\n",
+    message("**FINISHED** Total of analyzed loci: ", nrow(table), ".\n",
             "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
-            length(a), " Y-linked loci\n",
-            length(b), " sex-biased loci\n",
-            length(c), " X-linked loci\n",
-            length(d), " XY gametolog loci.\n",
+            "   ", length(a), " Y-linked loci\n",
+            "   ", length(b), " sex-biased loci\n",
+            "   ", length(c), " X-linked loci\n",
+            "   ", length(d), " XY gametolog loci.\n",
             "And ", length(autosomal), " autosomal loci.")
   }
   
