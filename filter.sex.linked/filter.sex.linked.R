@@ -361,10 +361,10 @@ filter.sex.linked <- function(gl, system = 'zw') {
     
     message("**FINISHED** Total of analyzed loci: ", nrow(table), ".\n",
             "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
-            "   ", length(a), " Y-linked loci\n",
+            "   ", length(a), " W-linked loci\n",
             "   ", length(b), " sex-biased loci\n",
-            "   ", length(c), " X-linked loci\n",
-            "   ", length(d), " XY gametolog loci.\n",
+            "   ", length(c), " Z-linked loci\n",
+            "   ", length(d), " ZW gametolog loci.\n",
             "And ", length(autosomal), " autosomal loci.")
   }
   
