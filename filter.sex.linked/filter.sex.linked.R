@@ -73,12 +73,30 @@ filter.sex.linked <- function(gl, system = 'zw') {
                   dimnames = list(c("F", "M"), 
                                   c("miss", "scored")))
     
-    # Run Fisher's exact test 
-    F.test <- fisher.test(obs)
+    # See if it's possible to use chisq test
+    if (sum(obs) >= 1000) {
+        
+        # Convert zeros to 1 to not obtain an error with chisq-test
+        obs[obs == 0] <- 1
+        
+        # Chisq-test
+        chisq.res <- chisq.test(obs, correct = FALSE)
+        
+        # Add to results table
+        table[i, "ratio"]         <- chisq.res$statistic
+        table[i, "p.value"] <- chisq.res$p.value
+        
+    } else {
+      
+        # Convert zeros to 1 to not obtain an error with Fisher's test
+        obs[obs == 0] <- 1
+      
+        # Run Fisher's exact test 
+        F.test <- fisher.test(obs)
     
-    # Add to results table
-    table[i, "ratio"]   <- F.test$estimate
-    table[i, "p.value"] <- F.test$p.value
+        # Add to results table
+        table[i, "ratio"]   <- F.test$estimate
+        table[i, "p.value"] <- F.test$p.value
   }
   
   # Adjust p-values for multiple comparisons (False discovery rate)
@@ -209,7 +227,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
                          ncol = 2,
                          dimnames = list(c("F", "M"), c("het", "hom")))
       
-      # Check if Yate's correction is necessary (n =< 20, Sokhal & Rohlf 1995)
+      # See if it's possible to use chisq test
       if (sum(contingency) >= 1000) {
         
         # Convert zeros to 1 to not obtain an error with chisq-test
@@ -224,7 +242,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
         
       } else {
   
-        # Convert zeros to 1 to not obtain an error with chisq-test
+        # Convert zeros to 1 to not obtain an error with Fisher's test
         contingency[contingency == 0] <- 1
   
         # Run Fisher's exact test 
