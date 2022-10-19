@@ -18,13 +18,13 @@
 ##                     filtering, and no. polymorphic loci after filtering    ##
 ##                                                                            ##
 ##  Index:                                                                    ##
-##    Line 26:  Function filter.ascertainment.loci                            ##
-##    Line 199: Example of use for filter.highly.het                          ##
+##    Line 26:  Function filter.ascertainment.bias                            ##
+##    Line 202: Example of use for filter.highly.het                          ##
 ################################################################################
 
 
 ############################## Defining function ###############################
-filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
+filter.ascertainment.bias <- function(gl, seed = 1, n = NULL){
   
   ############################ 1. Check pops sizes
   
@@ -200,7 +200,7 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
 
 
 ################################ Example of use ################################
-##   new.data <- filter.ascertainment.loci(gl = my.gl,                        ##
+##   new.data <- filter.ascertainment.bias(gl = my.gl,                        ##
 ##                                       seed = 100,                          ##
 ##                                       n = 50)                              ##
 ##   new.data$filtered.gl                                                     ##
