@@ -13,12 +13,12 @@
 ##       - seed = interger, chosen randomly by default.                       ##
 ##                                                                            ##
 ##  Output:                                                                   ##
-##   A dataframe with 10 columns, the last one 'agreed.sex' being the genetic ##
+##   A dataframe with 11 columns, the last one 'agreed.sex' being the genetic ##
 ##     sex assigned by at least two types of sex-linked loci.                 ##
 ##                                                                            ##
 ##  Index:                                                                    ##
 ##    Line 25: Function infer.sex                                             ##
-##    Line 176: Example of use for filter.highly.het                          ##
+##    Line 177: Example of use for filter.highly.het                          ##
 ################################################################################
 
 
@@ -84,11 +84,12 @@ infer.sex <- function(gl_sex_filtered, system = 'zw', seed = NULL) {
 
 W.sex <- function(gl, system = 'zw'){
   w <- as.matrix(gl)
-  w[is.na(w)] <- 1
+  w[is.na(w)] <- 3
 
-  n0.w <- rowSums(w == 0 | w == 2, na.rm = TRUE)
-  n1.w <- rowSums(w == 1, na.rm = TRUE)
+  n0.w <- rowSums(w == 0 | w == 2 | w == 1, na.rm = TRUE)
+  n1.w <- rowSums(w == 3, na.rm = TRUE)
 
+  # Calculate proportion
   sex.score <- function(f, m){
     return( (-f+m)/(f+m) )
   }
