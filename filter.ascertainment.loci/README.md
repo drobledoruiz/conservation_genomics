@@ -9,15 +9,13 @@ all individuals (e.g. n1 = 20, n2 = 40) genotyped for only the retained loci.
 
 This function requires as input:
   - A genlight object in which genlight@others$ind.metrics has a column named 'pop' and individuals assigned to at least 2 populations.
-  - A seed number. Interger used to randomly subsample larger populations to equalize sample sizes. The use of a seed makes results repeatable. *Set to 1
-  by default*.
-  - Maximum sample size (n). Interger used as the maximum sample size for the subsampling of larger populations. *Set to the smallest population size by default*.
-  This can be set to be larger than the smallest sample size if some ascertainment bias can be tolerated (e.g. instead of equalizing n1 = 20, n2 = 20; 
-  set n = 30 to obtain n1 = 20, n2 = 30).
+  - A seed number. Interger used to randomly subsample larger populations to equalize sample sizes. The use of a seed makes results repeatable. *Set to 1 by default*.
+  - Maximum sample size (n). Interger used as the maximum sample size for the subsampling of larger populations. *Set to the smallest population size by default*. This can be set to be larger than the smallest sample size if willing to tolerate some ascertainment bias (e.g. instead of equalizing n1 = 20, n2 = 20; set n = 30 to obtain n1 = 20, n2 = 30).
   
 This function produces as output:
-  - **$filtered.gl** - A genlight object without ascertainment loci (i.e. removed).
-  - **$removed.loci** - A vector with the names of the removed (ascertainment) loci.
+  - **$filtered.gl** - A genlight object without ascertainment bias (loci removed).
+  - **$asc.inds** - A vector with the names of the ascertainment individuals after equalization.
+  - **$removed.loci** - A vector with the names of the removed loci.
   - **$results.table** - A table with per population (i) sample size, (ii) number of polymorphic loci *before* filtering out ascertainment loci, and (iii) number of polymorphic loci *after* filtering out ascertainment loci. 
 
 The function also produces 3 plots (based on the information in $results.table):
