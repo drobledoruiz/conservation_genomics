@@ -1,4 +1,4 @@
-# filter.ascertainment.loci
+# filter.ascertainment.bias
 
 This function reduces the ascertainment bias product of unequal sampling size for different populations. By definition, reduced-representation sequencing (RRS) 
 identifies variable loci present in a sample of individuals. If the sample contains individuals from more than one population, and the sample size for one 
@@ -16,17 +16,17 @@ This function produces as output:
   - **$filtered.gl** - A genlight object without ascertainment bias (loci removed).
   - **$asc.inds** - A vector with the names of the ascertainment individuals after equalization.
   - **$removed.loci** - A vector with the names of the removed loci.
-  - **$results.table** - A table with per population (i) sample size, (ii) number of polymorphic loci *before* filtering out ascertainment loci, and (iii) number of polymorphic loci *after* filtering out ascertainment loci. 
+  - **$results.table** - A table with per population (i) sample size, (ii) number of polymorphic loci *before* filtering out ascertainment bias, and (iii) number of polymorphic loci *after* filtering out ascertainment bias. 
 
 The function also produces 3 plots (based on the information in $results.table):
   - Barplot of sample size per population.
-  - Barplot of the number of polymorphic loci present per population *before* filtering out ascertainment loci.
-  - Barplot of the number of polymorphic loci present per population *after* filtering out ascertainment loci.
+  - Barplot of the number of polymorphic loci present per population *before* filtering out ascertainment bias.
+  - Barplot of the number of polymorphic loci present per population *after* filtering out ascertainment bias.
 
 
 ## Usage
 ```
-filtered.data <- filter.ascertainment.loci(gl = my.genlight,
+filtered.data <- filter.ascertainment.bias(gl = my.genlight,
                                            seed = 100,
                                            n = 30)
 ```
