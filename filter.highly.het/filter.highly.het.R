@@ -147,7 +147,8 @@ filter.highly.het <- function(gl, Yates = FALSE){
   message("**FINISHED**. Removed ", gl@n.loc - gl.filter@n.loc, " highly-heterozygote loci.")
 
   return(list('filtered.gl'   = gl.filter,
-              'results.table' = table.filter))
+              'results.table' = table.filter,
+              'removed.loci'  = unique(table.filter$loci)))
 }
 ################################################################################
 
