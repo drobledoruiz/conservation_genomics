@@ -10,13 +10,13 @@ This function produces as output:
   - A list with 6 elements:
       1. A Results Table (see description below).
       2. Genlight object with w-linked/y-linked loci.
-      3. Genlight object with sex-biased scoring rate loci.
+      3. Genlight object with sex-biased call rate loci.
       4. Genlight object with z-linked/x-linked loci.
       5. Genlight object with zw-gametolog/xy-gametolog loci.
       6. Genlight object with **autosomal loci**.
   - Four plots:
-      1. A plot BEFORE filtering sex-linked loci by scoring rate.
-      2. A plot AFTER filtering sex-linked loci by scoring rate.
+      1. A plot BEFORE filtering sex-linked loci by call rate.
+      2. A plot AFTER filtering sex-linked loci by call rate.
       3. A plot BEFORE filtering sex-linked loci by heterozygosity.
       4. A plot AFTER filtering sex-linked loci by heterozygosity.
 
@@ -30,7 +30,7 @@ The output *filtered.data* contains 6 elements that can be called as:
 
    - **filtered.data$results.table** - Dataframe with information about highly-heterozygous loci (filtered out loci).
    - **filtered.data$w.linked** or **filtered.data$y.linked** - Genlight object with w-linked/y-linked loci.
-   - **filtered.data$sex.biased**    - Genlight object with sex-biased scoring rate loci.
+   - **filtered.data$sex.biased**    - Genlight object with sex-biased call rate loci.
    - **filtered.data$z.linked** or **filtered.data$x.linked**     - Genlight object with z-linked/x-linked loci.
    - **filtered.data$gametolog**     - Genlight object with zw-gametolog/xy-gametolog loci.
    - **filtered.data$autosomal**     - Genlight object with autosomal loci.
@@ -48,13 +48,13 @@ With loci being in rows and columns meaning:
 - **count.M.miss** - Count of males that have this locus as missing data (NA).
 - **count.F.scored** - Count of females that have this locus scored (0, 1 or 2; i.e. non-missing).
 - **count.M.scored** - Count of males that have this locus scored (0, 1 or 2; i.e. non-missing).
-- **ratio** - Fisher's exact test estimate testing for the independence of scoring rate and sex for this locus.
+- **ratio** - Fisher's exact test estimate testing for the independence of call rate and sex for this locus.
 - **p.value** - P-value for the Fisher's exact test estimate.
 - **p.adjusted** - P-value adjusted for false discovery rate.
-- **scoringRate.F** - Female scoring rate (proportion of females that were scored for this locus). This is the x-axis in the 1st and 2nd plot.
-- **scoringRate.M** - Male scoring rate (proportion of males that were scored for this locus). This is the y-axis in the 1st and 2nd plot.
+- **scoringRate.F** - Female call rate (proportion of females that were scored for this locus). This is the x-axis in the 1st and 2nd plot.
+- **scoringRate.M** - Male call rate (proportion of males that were scored for this locus). This is the y-axis in the 1st and 2nd plot.
 - **w.linked** - Boolean for this locus being w-linked.
-- **sex.biased** - Boolean for this locus having sex-biased scoring rate.
+- **sex.biased** - Boolean for this locus having sex-biased call rate.
 
 - **count.F.het** - Count of females that are heterozygous for this locus.
 - **count.M.het** - Count of males that are heterozygous for this locus.
@@ -71,19 +71,19 @@ With loci being in rows and columns meaning:
 
 ## How the function works
 The function works in 2 phases:
-1. Use loci scoring rate per sex to identify w-linked/y-linked loci and loci with sex-biased scoring rate.
+1. Use loci call rate per sex to identify w-linked/y-linked loci and loci with sex-biased call rate.
 2. Use the proportion of heterozygous males and females per loci to identify z-linked/x-linked loci and zw-gametologs.
 
 **Phase 1:**
   1. It creates a Results Table with loci in rows.
   2. It adds columns 'count.F.miss' and 'count.M.miss' with counts of the number of females and males with NA (missing data) for each locus, respectively.
   3. It adds columns 'count.F.scored' and 'count.M.scored' with counts of the number of females and males scored (0, 1 or 2) for each locus, respectively.
-  4. It builds a contingency table and performs a Fisher's exact test to test for the independence of scoring rate and sex per locus. It then adds to the Results Table a column with the Fisher's exact test estimate (column 'ratio') and its respective p-value (column 'p.value'). The rationale is that autosomal loci should present no difference in scoring rate between the sexes, and therefore, a locus in which scoring rate is biased by sex (i.e. individuals of one sex have significantly more or fewer missing data than expected compared to the other sex) is likely to be sex-linked.
+  4. It builds a contingency table and performs a Fisher's exact test to test for the independence of call rate and sex per locus. It then adds to the Results Table a column with the Fisher's exact test estimate (column 'ratio') and its respective p-value (column 'p.value'). The rationale is that autosomal loci should present no difference in call rate between the sexes, and therefore, a locus in which call rate is biased by sex (i.e. individuals of one sex have significantly more or fewer missing data than expected compared to the other sex) is likely to be sex-linked.
   5. It adjusts p-values to control for the false discovery rate and adds column 'p.adjusted' to the Results Table.
-  6. It adds columns 'scoringRate.F' and 'scoringRate.M' with the proportion of females and males scored (0, 1 or 2) for each locus, respectively. It outputs a plot with 'Female scoring rate' in the x axis and 'Male scoring rate' in the y axis in which each point is a locus. This is the BEFORE filtering plot. Autosomal loci should have roughly the same scoring rate for males and females, forming a cloud of points in a diagonal line.
-  7. It adds column 'w.linked' in which a locus is signalled as w-linked (TRUE) if its scoring rate for males is smaller or equal to 0.1 (because males have no W chromosome) and its adjusted p-value is smaller or equal to 0.01. Or it adds column 'y.linked' in which a locus is signalled as y-linked (TRUE) if its scoring rate for females is smaller or equal to 0.1 (because females have no Y chromosome) and its adjusted p-value is smaller or equal to 0.01. All other loci take value FALSE.
-  8. It adds column 'sex.biased' in which a locus is signalled as having sex-biased scoring rate (TRUE) if its adjusted p-value is smaller or equal to 0.01 and it has not been signalled as w-linked/y-linked.
-  9. It outputs the same plot as step 6 but removing w-linked/y-linked and sex-biased scoring rate loci. This is the AFTER filtering plot and should have only loci (points) that are roughly in the diagonal line.
+  6. It adds columns 'scoringRate.F' and 'scoringRate.M' with the proportion of females and males scored (0, 1 or 2) for each locus, respectively. It outputs a plot with 'Female call rate' in the x axis and 'Male call rate' in the y axis in which each point is a locus. This is the BEFORE filtering plot. Autosomal loci should have roughly the same call rate for males and females, forming a cloud of points in a diagonal line.
+  7. It adds column 'w.linked' in which a locus is signalled as w-linked (TRUE) if its call rate for males is smaller or equal to 0.1 (because males have no W chromosome) and its adjusted p-value is smaller or equal to 0.01. Or it adds column 'y.linked' in which a locus is signalled as y-linked (TRUE) if its call rate for females is smaller or equal to 0.1 (because females have no Y chromosome) and its adjusted p-value is smaller or equal to 0.01. All other loci take value FALSE.
+  8. It adds column 'sex.biased' in which a locus is signalled as having sex-biased call rate (TRUE) if its adjusted p-value is smaller or equal to 0.01 and it has not been signalled as w-linked/y-linked.
+  9. It outputs the same plot as step 6 but removing w-linked/y-linked and sex-biased call rate loci. This is the AFTER filtering plot and should have only loci (points) that are roughly in the diagonal line.
   
 **Phase 2:**
   1. It adds columns 'count.F.het' and 'count.M.het' with counts of the number of females and males scored as heterozygotes (scored '1') for each locus, respectively.
