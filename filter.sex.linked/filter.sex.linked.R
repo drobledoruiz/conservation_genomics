@@ -315,8 +315,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
   if(system == "zw") {  
     BEF.het <- plot(x = table$heterozygosity.F, 
                     y = table$heterozygosity.M,
-                    xlab = "Heterozygosity Females",
-                    ylab = "Heterozygosity Males",
+                    xlab = "% Heterozygous Females",
+                    ylab = "% Heterozygous Males",
                     main = "BEFORE",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
@@ -330,8 +330,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
                               table$z.linked     == FALSE &
                               table$zw.gametolog == FALSE, "heterozygosity.M"],
                     main = "AFTER",
-                    xlab = "Heterozygosity Females",
-                    ylab = "Heterozygosity Males",
+                    xlab = "% Heterozygous Females",
+                    ylab = "% Heterozygous Males",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
   }
@@ -340,8 +340,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
   if(system == "xy") {  
     BEF.het <- plot(x = table$heterozygosity.F, 
                     y = table$heterozygosity.M,
-                    xlab = "Heterozygosity Females",
-                    ylab = "Heterozygosity Males",
+                    xlab = "% Heterozygous Females",
+                    ylab = "% Heterozygous Males",
                     main = "BEFORE",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
@@ -355,8 +355,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
                               table$x.linked     == FALSE &
                               table$xy.gametolog == FALSE, "heterozygosity.M"],
                     main = "AFTER",
-                    xlab = "Heterozygosity Females",
-                    ylab = "Heterozygosity Males",
+                    xlab = "% Heterozygous Females",
+                    ylab = "% Heterozygous Males",
                     xlim = c(0, 1),
                     ylim = c(0, 1))
   }
