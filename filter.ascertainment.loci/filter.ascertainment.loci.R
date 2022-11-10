@@ -1,30 +1,30 @@
 ################################################################################
 ##     Function to filter ascertainment-bias loci from a genlight object      ##
 ##                                                                            ##
-##  Authors: Jesús Castrejón-Figueroa. R developer, Monash University         ##
-##           Diana A Robledo-Ruiz. Research Fellow, Monash University         ##
+##  Author: Diana A Robledo-Ruiz. Research Fellow, Monash University          ##
 ##  Date: 2022-08-18                                                          ##
 ##                                                                            ##
 ##  This function requires:                                                   ##
 ##   - Input: a genlight object with min 2 pop in gl@other$ind.metrics$pop    ##
 ##   - User specified parameters:                                             ##
 ##       - seed = interger, 1 by default                                      ##
-##       - n = maximum pop size, size from smallest pop by default            ##                                      ##
+##       - n = maximum pop size, size from smallest pop by default            ##
 ##                                                                            ##
 ##  Output:                                                                   ##
-##    $filtered.gl   - Genlight object without ascertainment loci (removed)   ##
-##    $removed.loci  - Vector with names of the removed (ascertainment) loci  ##
+##    $filtered.gl   - Genlight without ascertainment bias (loci removed)     ##
+##    $asc.inds      - Vector with names of ascertainment individuals         ##
+##    $removed.loci  - Vector with names of the removed loci                  ##
 ##    $results.table - Per pop sample size, no. polymorphic loci before       ##
 ##                     filtering, and no. polymorphic loci after filtering    ##
 ##                                                                            ##
 ##  Index:                                                                    ##
-##    Line 26:  Function filter.ascertainment.loci                            ##
-##    Line 199: Example of use for filter.highly.het                          ##
+##    Line 26:  Function filter.ascertainment.bias                            ##
+##    Line 202: Example of use for filter.highly.het                          ##
 ################################################################################
 
 
 ############################## Defining function ###############################
-filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
+filter.ascertainment.bias <- function(gl, seed = 1, n = NULL){
   
   ############################ 1. Check pops sizes
   
@@ -104,6 +104,8 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
     return(list(index = mono.index, 
                 names = mono.names))
   }
+  
+  asc.inds <- df[df$keep == "keep", "id"]
   
   ############### 4. Remove ind, id monomorphic loci, remove loci
   
@@ -189,18 +191,20 @@ filter.ascertainment.loci <- function(gl, seed = 1, n = NULL){
                                "# poly after")
   
   ############################## 8. Return output 
-  return(list("filtered.gl" = gl2,
-              "removed.loci" = loci2drop$names,
+  return(list("filtered.gl"   = gl2,
+              "asc.inds"      = asc.inds,
+              "removed.loci"  = loci2drop$names,
               "results.table" = results.table))
 }
 ################################################################################
 
 
 ################################ Example of use ################################
-## new.data <- filter.ascertainment.loci(gl = my.gl,                          ##
+##   new.data <- filter.ascertainment.bias(gl = my.gl,                        ##
 ##                                       seed = 100,                          ##
 ##                                       n = 50)                              ##
-## new.data$filtered.gl                                                       ##
-## new.data$removed.loci                                                      ##
-## new.data$results.table                                                     ##
+##   new.data$filtered.gl                                                     ##
+##   new.data$asc.inds                                                        ##
+##   new.data$removed.loci                                                    ##
+##   new.data$results.table                                                   ##
 ################################################################################
