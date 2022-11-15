@@ -114,7 +114,9 @@ W.sex <- function(gl, system = 'zw'){
 ### Map Hom and Het to 2Dim and apply kmeans. Choose the label from maximum Hom
 
 Z.sex <- function(gl, system = 'zw', seed = 42){
-  z <- as.matrix(gl)
+  z_unclean <- as.matrix(gl)   
+  zna <- z_unclean[rowSums(is.na(z_unclean)) > 0,]
+  z <- na.omit(z_unclean)
 
   n0.z = rowSums(z == 0 | z == 2, na.rm = TRUE)
   n1.z = rowSums(z == 1, na.rm = TRUE)
@@ -138,14 +140,29 @@ Z.sex <- function(gl, system = 'zw', seed = 42){
 
   Z.sex <- ifelse( km$cluster  == label, lab1, lab0)
   Y <- data.frame(Z.sex, n1.z, n0.z)
-  return(Y)
+
+  Nna <- dim(zna)[1]
+  if(Nna == 0){
+    return(Y)
+  } else{
+    rnames <- row.names(zna)
+    cnames <- names(zna)
+    Yna <- data.frame(rep(NA,nna), rep(0,nna), rep(0,nna))
+    row.names(Yna) <- rnames
+    names(Yna) <- cnames
+    return( rbind( Y , Yna) )
+  }
 }
 
 ############################### 3. ZWg.sex function
 ### Map Hom and Het to 2Dim and apply kmeans. Choose the label from maximum Het
 
 ZWg.sex <-  function(gl, system = 'zw', seed = 42) {
-  zwg = as.matrix(gl)
+  zwg_unclean = as.matrix(gl)
+
+
+  zna <- zwg_unclean[rowSums(is.na(zwg_unclean)) > 0,]
+  zwg <- na.omit(zwg_unclean)
 
   n0.zw = rowSums(zwg == 0 | zwg == 2, na.rm = TRUE)
   n1.zw = rowSums(zwg == 1, na.rm = TRUE)
@@ -169,7 +186,18 @@ ZWg.sex <-  function(gl, system = 'zw', seed = 42) {
 
   ZWg.sex <- ifelse( km$cluster  == label, lab0, lab1)
   Y <- data.frame(ZWg.sex, n0.zw, n1.zw)
-  return(Y)
+  
+  Nna <- dim(zna)[1]
+  if(Nna == 0){
+    return(Y)
+  } else{
+    rnames <- row.names(zna)
+    cnames <- names(zna)
+    Yna <- data.frame(rep(NA,nna), rep(0,nna), rep(0,nna))
+    row.names(Yna) <- rnames
+    names(Yna) <- cnames
+    return( rbind( Y , Yna) )
+  }
 }
 ################################################################################
 
