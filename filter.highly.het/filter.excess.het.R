@@ -1,5 +1,5 @@
 ################################################################################
-##     Function to filter highly-heterozygous loci from a genlight object     ##
+##   Function to filter excessively-heterozygous loci from a genlight object  ##
 ##                                                                            ##
 ##  Authors: Jesús Castrejón-Figueroa. R developer, Monash University         ##
 ##           Diana A Robledo-Ruiz. Research Fellow, Monash University         ##
@@ -10,16 +10,16 @@
 ##   - User specified parameter: Boolean for Yates's continuity correction.   ##
 ##                                                                            ##
 ##  Output:                                                                   ##
-##    $results.table - Dataframe with information on highly-heterozygous loci ##
-##    $filtered.gl   - Genlight object without highly-heterozygous loci       ##
+##    $results.table - Dataframe with information on excessively-het loci     ##
+##    $filtered.gl   - Genlight object without excessively-het loci           ##
 ##                                                                            ##
 ##  Index:                                                                    ##
-##    Line 21: Function filter.highly.het                                     ##
-##    Line 126: Example of use for filter.highly.het                          ##
+##    Line 21: Function filter.excess.het                                     ##
+##    Line 126: Example of use for filter.excess.het                          ##
 ################################################################################
 
-#################### Define function filter.highly.het ####################
-filter.highly.het <- function(gl, Yates = FALSE){
+#################### Define function filter.excess.het ####################
+filter.excess.het <- function(gl, Yates = FALSE){
 
   if(!Yates) {
     cc = 0
@@ -144,7 +144,7 @@ filter.highly.het <- function(gl, Yates = FALSE){
                   xlim = c(0, gl@n.loc))
 
   ################## 6. Output
-  message("**FINISHED**. Removed ", gl@n.loc - gl.filter@n.loc, " highly-heterozygote loci.")
+  message("**FINISHED**. Removed ", gl@n.loc - gl.filter@n.loc, " excessively-heterozygous loci.")
 
   return(list('filtered.gl'   = gl.filter,
               'results.table' = table.filter,
@@ -153,7 +153,7 @@ filter.highly.het <- function(gl, Yates = FALSE){
 ################################################################################
 
 ################################ Example of use ################################
-##  filtered.data <- filter.highly.het(gl = my.genlight,                      ##
+##  filtered.data <- filter.excess.het(gl = my.genlight,                      ##
 ##                                     Yates = TRUE)                          ##
 ##  filtered.data$results.table                                               ##
 ##  filtered.data$filtered.gl                                                 ##
