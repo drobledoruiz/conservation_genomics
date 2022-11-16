@@ -13,12 +13,12 @@
 ##       - seed = interger, chosen randomly by default.                       ##
 ##                                                                            ##
 ##  Output:                                                                   ##
-##   A dataframe with 11 columns, the last one 'agreed.sex' being the genetic ##
-##     sex assigned by at least two types of sex-linked loci.                 ##
+##   A dataframe with 11 columns, the last one 'agreed.sex' being the final   ##
+##     genetic sex assigned using sex-linked loci information.                ##
 ##                                                                            ##
 ##  Index:                                                                    ##
 ##    Line 25: Function infer.sex                                             ##
-##    Line 177: Example of use for filter.highly.het                          ##
+##    Line 253: Example of use for infer.sex                                  ##
 ################################################################################
 
 
@@ -44,21 +44,50 @@ infer.sex <- function(gl_sex_filtered, system = 'zw', seed = NULL) {
 
   gl3 <- gl_sex_filtered$gametolog
 
-  # Functions declared below
-  w   <-  W.sex(  gl1, system = system)
-  z   <-  Z.sex(  gl2, system = system, seed = seed)
-  zwg <-  ZWg.sex(gl3, system = system, seed = seed)
-  A   <-  data.frame(w, z, zwg)
+  # Make sex assignment per type of sex-linked loci (Functions declared below)
+  # W/Y-linked
+  if (gl1@n.loc >= 3){
+    w   <-  W.sex(  gl1, system = system)
+  } else {
+    message("Not enough W-linked/Y-linked loci. Assigning NA...")
+    w <- data.frame(W.sex = rep(NA, length(gl1@ind.names)),
+                    n0.w  = rep(NA, length(gl1@ind.names)),
+                    n1.w  = rep(NA, length(gl1@ind.names)))
+  }
+  # Z/X-linked
+  if (gl2@n.loc >= 2){
+    z   <-  Z.sex(  gl2, system = system, seed = seed)
+  } else {
+    message("Not enough Z-linked/X-linked loci. Assigning NA...")
+    z <- data.frame(Z.sex = rep(NA, length(gl2@ind.names)),
+                    n1.z  = rep(NA, length(gl2@ind.names)),
+                    n0.z  = rep(NA, length(gl2@ind.names)))
+  }
+  # Gametologues
+  if (gl3@n.loc >= 2){
+    g   <-  g.sex(  gl3, system = system, seed = seed)
+  } else {
+    message("Not enough gametologues. Assigning NA...")
+    g <- data.frame(g.sex = rep(NA, length(gl3@ind.names)),
+                    n1.g  = rep(NA, length(gl3@ind.names)),
+                    n0.g  = rep(NA, length(gl3@ind.names)))
+  }
 
+  # Put them all together
+  A   <-  data.frame(w, z, g)
+
+  # Function to conciliate assignments
   Fun <- function(x, y, z){
     d  <- c(x, y, z)
-    yy <- count(d)
+    yy <- data.frame(x = c("F", "M"),
+                     freq = c(sum(d == "F", na.rm = TRUE),
+                              sum(d == "M", na.rm = TRUE)))
     yy <- yy[order(-yy$freq),]
-    value <- if(yy[1, 2] == 3) yy[1, 1] else sprintf('*%s', yy[1, 1])
+    value <- if(length(unique(na.omit(d))) == 1) unique(na.omit(d)) else sprintf('*%s', yy[1, 1])
     return(value)
   }
 
-  A$agreed.sex <- mapply(Fun, A$W.sex, A$Z.sex, A$ZWg.sex)
+  A$agreed.sex <- mapply(Fun, A$W.sex, A$Z.sex, A$g.sex)
 
   if(system == 'xy'){
     names <- c('y.linked.sex',  '#missing', '#called',
@@ -75,6 +104,8 @@ infer.sex <- function(gl_sex_filtered, system = 'zw', seed = NULL) {
   A <- cbind(row.names(A), A)
 
   colnames(A)[1] <- "id"
+
+  message("***FINISHED***")
 
   return(A)
 }
@@ -114,14 +145,14 @@ W.sex <- function(gl, system = 'zw'){
 ### Map Hom and Het to 2Dim and apply kmeans. Choose the label from maximum Hom
 
 Z.sex <- function(gl, system = 'zw', seed = 42){
-  z_unclean <- as.matrix(gl)   
-  zna <- z_unclean[rowSums(is.na(z_unclean)) > 0,]
-  z <- na.omit(z_unclean)
+  z <- as.matrix(gl)
 
   n0.z = rowSums(z == 0 | z == 2, na.rm = TRUE)
   n1.z = rowSums(z == 1, na.rm = TRUE)
 
-  Z <- t(apply(data.frame(n0.z, n1.z), 1, function(x) x / sum(x) ))
+  Z_unclean <- t(apply(data.frame(n0.z, n1.z), 1, function(x) x / sum(x) ))
+  Z <- na.omit(Z_unclean)
+  Zna <- Z_unclean[rowSums(is.na(Z_unclean)) > 0,]
 
   # Apply k-means
   set.seed(seed)
@@ -138,66 +169,83 @@ Z.sex <- function(gl, system = 'zw', seed = 42){
     lab1 <- 'M'
   }
 
+  # Assign sex
   Z.sex <- ifelse( km$cluster  == label, lab1, lab0)
-  Y <- data.frame(Z.sex, n1.z, n0.z)
 
-  Nna <- dim(zna)[1]
-  if(Nna == 0){
-    return(Y)
-  } else{
-    rnames <- row.names(zna)
-    cnames <- names(zna)
-    Yna <- data.frame(rep(NA,nna), rep(0,nna), rep(0,nna))
-    row.names(Yna) <- rnames
-    names(Yna) <- cnames
-    return( rbind( Y , Yna) )
+  # Assign NA to inds with NA
+  if (nrow(Zna) > 0){
+    for (i in 1:nrow(Zna)) {
+      Z.sex[length(Z.sex)+1] <- NA
+      names(Z.sex)[length(names(Z.sex))] <- rownames(Zna)[i]
+    }
   }
+
+  # Fuse them
+  Y <- data.frame(n1.z, n0.z)
+
+  # Add NAs in appropriate row
+  Y$Z.sex <- "STOP"
+  for (i in 1:nrow(Y)){
+    Y[i, "Z.sex"] <- Z.sex[rownames(Y)[i]]
+  }
+
+  Y <- Y[, c("Z.sex", "n1.z", "n0.z")]
+
+  return(Y)
 }
 
 ############################### 3. ZWg.sex function
 ### Map Hom and Het to 2Dim and apply kmeans. Choose the label from maximum Het
 
-ZWg.sex <-  function(gl, system = 'zw', seed = 42) {
-  zwg_unclean = as.matrix(gl)
+g.sex <-  function(gl, system = 'zw', seed = 42) {
+  z <- as.matrix(gl)
 
+  n0.g = rowSums(z == 0 | z == 2, na.rm = TRUE)
+  n1.g = rowSums(z == 1, na.rm = TRUE)
 
-  zna <- zwg_unclean[rowSums(is.na(zwg_unclean)) > 0,]
-  zwg <- na.omit(zwg_unclean)
-
-  n0.zw = rowSums(zwg == 0 | zwg == 2, na.rm = TRUE)
-  n1.zw = rowSums(zwg == 1, na.rm = TRUE)
-
-  Z <- t(apply(data.frame(n0.zw, n1.zw), 1, function(x) x / sum(x) ))
+  Z_unclean <- t(apply(data.frame(n0.g, n1.g), 1, function(x) x / sum(x) ))
+  Z <- na.omit(Z_unclean)
+  Zna <- Z_unclean[rowSums(is.na(Z_unclean)) > 0,]
 
   # Apply k-means
   set.seed(seed)
   km <- kmeans(Z, 2)
 
-  i <- which.max(n1.zw) # Largest proportion of '1'
+  i <- which.max(n1.g) # Largest proportion of '1'
   label <- km$cluster[i]
 
-  if(system == 'xy') {
-    lab0 = 'M'
-    lab1 = 'F'
+  if(system == 'xy'){
+    lab0 <- 'M'
+    lab1 <- 'F'
   } else {
-    lab0 = 'F'
-    lab1 = 'M'
+    lab0 <- 'F'
+    lab1 <- 'M'
   }
 
-  ZWg.sex <- ifelse( km$cluster  == label, lab0, lab1)
-  Y <- data.frame(ZWg.sex, n0.zw, n1.zw)
-  
-  Nna <- dim(zna)[1]
-  if(Nna == 0){
-    return(Y)
-  } else{
-    rnames <- row.names(zna)
-    cnames <- names(zna)
-    Yna <- data.frame(rep(NA,nna), rep(0,nna), rep(0,nna))
-    row.names(Yna) <- rnames
-    names(Yna) <- cnames
-    return( rbind( Y , Yna) )
+  # Assign sex (HERE IS THE OPPOSITE)
+  Z.sex <- ifelse( km$cluster  == label, lab0, lab1)
+
+  # Assign NA to inds with NA
+  if (nrow(Zna) > 0){
+    for (i in 1:nrow(Zna)) {
+      Z.sex[length(Z.sex)+1] <- NA
+      names(Z.sex)[length(names(Z.sex))] <- rownames(Zna)[i]
+    }
   }
+
+  # Fuse them
+  Y <- data.frame(n1.g, n0.g)
+
+  # Add NAs in appropriate row
+  Y$g.sex <- "STOP"
+  for (i in 1:nrow(Y)){
+    Y[i, "g.sex"] <- Z.sex[rownames(Y)[i]]
+  }
+
+  Y <- Y[, c("g.sex", "n1.g", "n0.g")]
+
+  return(Y)
+
 }
 ################################################################################
 
