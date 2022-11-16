@@ -1,13 +1,13 @@
-# swiss_army_knife for genetic management
+# Bioinformatics tools for conservation genomics
 
-A tool set written in R for quick and easy handling of genetic data to do common analyses for the genetic management of endangered populations.
+A tool set written in R for quick and easy handling of genomic data to do common analyses for the genetic management of endangered populations. These functions are introduced in Robledo-Ruiz et al. (_submitted_) "". **Do check each function directory for further details on usage.**
 
-## Elements
+## Functions
 
 1. **filter.sex.linked:** filters sex-linked SNPs from a genlight object. 
-2. **gl2colony:** exports a COLONY2 file from a genlight object.
-3. **infer.sex:** infers sex from sex-linked SNPs.
-4. **filter.highly.het:** filters highly heterozygous loci.
+2. **infer.sex:** infers sex from sex-linked SNPs.
+3. **filter.excess.het:** filters excessively-heterozygous loci.
+4. **gl2colony:** exports a COLONY2 file from a genlight object.
 
 ---------------------------------------------------------------------------
 Contact:
