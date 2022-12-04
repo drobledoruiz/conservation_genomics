@@ -1,6 +1,6 @@
 # infer.sex
 
-This function uses the output of function *filter.sex.linked* (list of 6 genlight objects) to infer the sex of all individuals. It uses 3 types of sex-linked loci (W-linked/Y-linked, Z-linked/X-linked, and gametologs), assigns a genetic sex for each type, and outputs an agreed sex assigned by at least 2 types of sex-linked loci. **We created this function with the explicit intent that a human checks the evidence for the sex assignments that do NOT agree for all 3 types of sex-linked loci** (denoted as '*M' or '*F'). This human can then use their criterion to validate the assignment.
+This function uses the output of function *filter.sex.linked* (list of 6 genlight objects) to infer the sex of all individuals. It uses 3 types of sex-linked loci (W-linked/Y-linked, Z-linked/X-linked, and gametologs), assigns a genetic sex for each type available, and outputs an agreed sex. **We created this function with the explicit intent that a human checks the evidence for the sex assignments that do NOT agree for all types of sex-linked loci** (denoted as '*M' or '*F'). This human can then use their criterion to validate these assignments.
 
 The function requires as input:
 - **gl_sex_filtered** - List of 6 genlight objects created by the function *filter.sex.linked*.
@@ -51,14 +51,14 @@ ind4     F     		12     	114       M      	7    	776      M     		156   	248   	
 The 3 types of sex-linked loci agree that ind1 is a female, and ind2 is a male. However, for ind3 Y- and X-linked loci suggest a female but XY-gametologs suggest a male. Similarly for ind4 X-linked loci and XY-gametologs suggest a male but Y-linked loci suggest a female. In these cases the sex is reported as probable female ('*F') and probable male ('*M'), respectively. **A human must check the evidence for these probable sex assignments and use their criterion to validate them or not.**
 
 ## How the function works
-It assigns a genetic sex for 3 types of sex-linked loci by:
+It makes a preliminary sex assignment for each type of sex-linked loci available:
 - **W-linked**: assigns 'M' to an individual if its genotypes for these loci are mostly missing (cf. called genotype), 'F' otherwise. Or **Y-linked**: assigns 'F' to an individual if its genotypes for these loci are mostly missing (cf. called genotype), 'M' otherwise.
 - **Z-linked/X-linked**: it uses these loci to perform a k-means clustering of individuals in two clusters (F and M).
 - **Gametologs**: it uses these loci to perform a k-means clustering of individuals in two clusters (F and M).
 	
 The function then outputs an agreed sex:
-- 'F' or 'M' if the 3 types of sex-linked loci assigned the same sex.
-- '*F' or '*M' if only 2 types of sex-linked loci assigned the same sex.
+- 'F' or 'M' if all preliminary sex-assignments match.
+- '*F' or '*M' if NOT all preliminary sex-assignments match.
 
 
 ---------------------------------------------------------------------------
