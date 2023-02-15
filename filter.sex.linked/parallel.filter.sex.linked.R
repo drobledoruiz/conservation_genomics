@@ -23,9 +23,20 @@
 ##   Line 432: Example of use for filter.sex.linked                           ##
 ################################################################################
 
+library(tictoc)
+
 
 ############################## Defining function ###############################
-filter.sex.linked <- function(gl, system = 'zw') {
+filter.sex.linked <- function(gl, system = 'zw', parallel=TRUE, ncores=-1) {
+
+  start_time0 <- Sys.time()
+  if(parallel){
+    library(doParallel)
+    if(ncores==-1){
+      ncores<-detectCores()      
+    }
+    registerDoParallel(cores=ncores)
+  }
 
   # Transform genotypes to matrix and transpose
   gen <- as.data.frame(t(as.matrix(gl)))
@@ -54,52 +65,95 @@ filter.sex.linked <- function(gl, system = 'zw') {
   table$count.F.scored <- rowSums(!is.na(gen.F))
   table$count.M.scored <- rowSums(!is.na(gen.M))
 
-  # Add empty columns for statistic and corresponding p-value
-  table$ratio   <- NA
-  table$p.value <- NA
-
+  tic('1st for time:')
   message("Starting phase 1. May take a while...")
+  # Apply Fisher's exact test (because there are observations with less than 5)
+  if(parallel){
+      xfisher <- foreach(i = 1:nrow(table), .combine=rbind)%dopar%{    
+      # Make vector of observed values
+      obs <- matrix(c(table[i, "count.F.miss"],
+                      table[i, "count.M.miss"], 
+                      table[i, "count.F.scored"],
+                      table[i, "count.M.scored"]), 
+                    nrow = 2, 
+                    ncol = 2,
+                    dimnames = list(c("F", "M"), 
+                                    c("miss", "scored")))
+      
+        # See if it's possible to use chisq test
+        if (sum(obs) >= 1000) {
 
-  # Test for independece of sex and missingness
-  for (i in 1:nrow(table)) {
+          # Convert zeros to 1 to not obtain an error with chisq-test
+          obs[obs == 0] <- 1
 
-    # Make matrix of observed values
-    obs <- matrix(c(table[i, "count.F.miss"],
-                    table[i, "count.M.miss"],
-                    table[i, "count.F.scored"],
-                    table[i, "count.M.scored"]),
-                  nrow = 2,
-                  ncol = 2,
-                  dimnames = list(c("F", "M"),
-                                  c("miss", "scored")))
+          # Chisq-test
+          chisq.res <- chisq.test(obs, correct = FALSE)
+
+        # Add to results table
+        return(data.frame(ratio=chisq.res$statistic,p.value=chisq.res$p.value))
+        #    table[i, "ratio"]   <- F.test$estimate
+        #    table[i, "p.value"] <- F.test$p.value
+
+        } else {
+          # Convert zeros to 1 to not obtain an error with Fisher's test
+          obs[obs == 0] <- 1
+
+          # Run Fisher's exact test
+          F.test <- fisher.test(obs)
+
+        # Add to results table
+        return(data.frame(ratio=F.test$estimate,p.value=F.test$p.value))
+        #    table[i, "ratio"]   <- F.test$estimate
+        #    table[i, "p.value"] <- F.test$p.value
+        }
+      }
+      table <- cbind(table,xfisher)
+  }else{
+      # Add empty columns for chisq-statistic and corresponding p-value
+      table$ratio   <- NA
+      table$p.value <- NA
+      # Test for independece of sex and missingness
+      for (i in 1:nrow(table)) {
+
+        # Make matrix of observed values
+        obs <- matrix(c(table[i, "count.F.miss"],
+                        table[i, "count.M.miss"],
+                        table[i, "count.F.scored"],
+                        table[i, "count.M.scored"]),
+                      nrow = 2,
+                      ncol = 2,
+                      dimnames = list(c("F", "M"),
+                                      c("miss", "scored")))
 
 
-    # See if it's possible to use chisq test
-    if (sum(obs) >= 1000) {
+        # See if it's possible to use chisq test
+        if (sum(obs) >= 1000) {
 
-      # Convert zeros to 1 to not obtain an error with chisq-test
-      obs[obs == 0] <- 1
+          # Convert zeros to 1 to not obtain an error with chisq-test
+          obs[obs == 0] <- 1
 
-      # Chisq-test
-      chisq.res <- chisq.test(obs, correct = FALSE)
+          # Chisq-test
+          chisq.res <- chisq.test(obs, correct = FALSE)
 
-      # Add to results table
-      table[i, "ratio"]         <- chisq.res$statistic
-      table[i, "p.value"] <- chisq.res$p.value
+          # Add to results table
+          table[i, "ratio"]         <- chisq.res$statistic
+          table[i, "p.value"] <- chisq.res$p.value
 
-    } else {
+        } else {
 
-      # Convert zeros to 1 to not obtain an error with Fisher's test
-      obs[obs == 0] <- 1
+          # Convert zeros to 1 to not obtain an error with Fisher's test
+          obs[obs == 0] <- 1
 
-      # Run Fisher's exact test
-      F.test <- fisher.test(obs)
+          # Run Fisher's exact test
+          F.test <- fisher.test(obs)
 
-      # Add to results table
-      table[i, "ratio"]   <- F.test$estimate
-      table[i, "p.value"] <- F.test$p.value
-    }
+          # Add to results table
+          table[i, "ratio"]   <- F.test$estimate
+          table[i, "p.value"] <- F.test$p.value
+        }
+      }
   }
+  toc()
 
   # Adjust p-values for multiple comparisons (False discovery rate)
   table$p.adjusted <- p.adjust(table$p.value, method = "fdr")
@@ -111,6 +165,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
 
   ##### 1.1 W-linked or Y-linked loci
   # For zw sex-determination system
+  tic('w for time:')
   if(system == "zw") {
     table$w.linked <- NA
 
@@ -122,7 +177,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
       }
     }
   }
-
+toc()
   # For xy sex-determination system
   if(system == "xy") {
     table$y.linked <- NA
@@ -136,7 +191,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
     }
   }
 
-
+ tic('2st for time:')
   ##### 1.2 Loci with sex-biased scoring rate
   table$sex.biased <- NA
 
@@ -147,7 +202,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
       table[i, "sex.biased"] <- FALSE
     }
   }
-
+toc()
+tic('plotting')
   message("Building call rate plots.")
 
   ##### 1.3 Plot BEFORE vs AFTER
@@ -191,7 +247,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
                     ylim = c(0, 1))
   }
 
-
+  toc()
+  tic('count het')
 
   #################### 2. Sex-linked loci by heterozygosity
   # Count heterozygotes ("1") and add as column to results table
@@ -205,58 +262,120 @@ filter.sex.linked <- function(gl, system = 'zw') {
                                na.rm = TRUE)
 
   # Add empty columns for statistic and corresponding p-value
-  table$stat         <- NA
-  table$stat.p.value <- NA
+  #  table$stat         <- NA
+  #  table$stat.p.value <- NA
+
 
   message("Done building call rate plots. Starting phase 2.")
-
-  # Apply test for independence of sex and heterozygosity
-  for (i in 1:nrow(table)) {
-
-    # Exclude w.y-linked loci and loci with sex-biased score
-    if (table[i, 11] == TRUE | table[i, "sex.biased"] == TRUE) {
-      table[i, "stat"]         <- NA
-      table[i, "stat.p.value"] <- NA
-
-    } else {
-
-      # Make contingency table
-      contingency <- matrix(c(table[i, "count.F.het"],
-                              table[i, "count.M.het"],
-                              table[i, "count.F.hom"],
-                              table[i, "count.M.hom"]),
-                            nrow = 2,
-                            ncol = 2,
-                            dimnames = list(c("F", "M"), c("het", "hom")))
-
-      # See if it's possible to use chisq test
-      if (sum(contingency) >= 1000) {
-
-        # Convert zeros to 1 to not obtain an error with chisq-test
-        contingency[contingency == 0] <- 1
-
-        # Chisq-test
-        chisq.res <- chisq.test(contingency, correct = FALSE)
-
-        # Add to results table
-        table[i, "stat"]         <- chisq.res$statistic
-        table[i, "stat.p.value"] <- chisq.res$p.value
-
+  toc()
+  tic('3st for time:')
+  if(parallel){
+      xstat <- foreach(i = 1:nrow(table), .combine=rbind)%dopar%{  
+      
+      # Exclude w.y-linked loci and loci with sex-biased score
+      if (table[i, 11] == TRUE | table[i, "sex.biased"] == TRUE) {
+        stat.value <- NA
+        stat.p.value <- NA
+        #table[i, "stat"]         <- NA
+        #table[i, "stat.p.value"] <- NA
+      
       } else {
+        
+        # Make contingency table
+        contingency <- matrix(c(table[i, "count.F.het"],
+                                table[i, "count.M.het"], 
+                                table[i, "count.F.hom"],
+                                table[i, "count.M.hom"]), 
+                           nrow = 2, 
+                           ncol = 2,
+                           dimnames = list(c("F", "M"), c("het", "hom")))
+        
+        # Check if Yate's correction is necessary (n =< 20, Sokhal & Rohlf 1995)
+        if (sum(contingency) >= 1000) {
+          
+          # Convert zeros to 1 to not obtain an error with chisq-test
+          contingency[contingency == 0] <- 1
+          
+          # Chisq-test
+          chisq.res <- chisq.test(contingency, correct = FALSE)
+          
+          # Add to results table
+          stat.value <- chisq.res$statistic
+          stat.p.value <- chisq.res$p.value
+          #table[i, "stat"]         <- chisq.res$statistic
+          #table[i, "stat.p.value"] <- chisq.res$p.value
 
-        # Convert zeros to 1 to not obtain an error with Fisher's test
-        contingency[contingency == 0] <- 1
-
-        # Run Fisher's exact test
-        F.test <- fisher.test(contingency)
-
-        # Add to results table
-        table[i, "stat"]         <- F.test$estimate
-        table[i, "stat.p.value"] <- F.test$p.value
+          
+        } else {
+    
+          # Convert zeros to 1 to not obtain an error with chisq-test
+          contingency[contingency == 0] <- 1
+    
+          # Run Fisher's exact test 
+          F.test <- fisher.test(contingency)
+      
+          # Add to results table
+          stat.value <- F.test$estimate
+          stat.p.value <- F.test$p.value
+          #table[i, "stat"]         <- F.test$estimate
+          #table[i, "stat.p.value"] <- F.test$p.value
+        }
       }
+    return(data.frame(stat=stat.value,stat.p.value=stat.p.value))
     }
-  }
+    table <- cbind(table,xstat)
+  }else{
+      # Add empty columns for statistic and corresponding p-value
+      table$stat         <- NA
+      table$stat.p.value <- NA
+      # Apply test for independence of sex and heterozygosity
+      for (i in 1:nrow(table)) {
 
+        # Exclude w.y-linked loci and loci with sex-biased score
+        if (table[i, 11] == TRUE | table[i, "sex.biased"] == TRUE) {
+          table[i, "stat"]         <- NA
+          table[i, "stat.p.value"] <- NA
+
+        } else {
+
+          # Make contingency table
+          contingency <- matrix(c(table[i, "count.F.het"],
+                                  table[i, "count.M.het"],
+                                  table[i, "count.F.hom"],
+                                  table[i, "count.M.hom"]),
+                                nrow = 2,
+                                ncol = 2,
+                                dimnames = list(c("F", "M"), c("het", "hom")))
+
+          # See if it's possible to use chisq test
+          if (sum(contingency) >= 1000) {
+
+            # Convert zeros to 1 to not obtain an error with chisq-test
+            contingency[contingency == 0] <- 1
+
+            # Chisq-test
+            chisq.res <- chisq.test(contingency, correct = FALSE)
+
+            # Add to results table
+            table[i, "stat"]         <- chisq.res$statistic
+            table[i, "stat.p.value"] <- chisq.res$p.value
+
+          } else {
+
+            # Convert zeros to 1 to not obtain an error with Fisher's test
+            contingency[contingency == 0] <- 1
+
+            # Run Fisher's exact test
+            F.test <- fisher.test(contingency)
+
+            # Add to results table
+            table[i, "stat"]         <- F.test$estimate
+            table[i, "stat.p.value"] <- F.test$p.value
+          }
+        }
+      }
+  }
+  toc()
   message("Building heterozygosity plots.")
 
   # Adjust p-values for multiple comparisons (False discovery rate, least conservative)
@@ -267,7 +386,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
 
   table$heterozygosity.M <- table$count.M.het/(table$count.M.het+table$count.M.hom)
 
-
+tic('4st for time:')
   ##### 2.1 Z-linked or X-linked loci AND gametologs
   # For zw sex-determination system
   if(system == "zw") {
@@ -289,7 +408,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
       }
     }
   }
-
+toc()
   # For xy sex-determination system
   if(system == "xy") {
     table$x.linked     <- FALSE
@@ -443,7 +562,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
                     "z.linked"      = C,
                     "gametolog"     = D,
                     "autosomal"     = gl.autosomal)}
-
+  end_time0 <- Sys.time()
+  print(sprintf("global time: %s",end_time0-start_time0))
   return(rlist)
 }
 ################################################################################
