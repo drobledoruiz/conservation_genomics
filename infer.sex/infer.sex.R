@@ -173,7 +173,7 @@ Z.sex <- function(gl, system = 'zw', seed = 42){
   Z.sex <- ifelse( km$cluster  == label, lab1, lab0)
 
   # Assign NA to inds with NA
-  if (nrow(Zna) > 0){
+  if (!is.null(nrow(Zna)) && nrow(Zna) > 0 ){
     for (i in 1:nrow(Zna)) {
       Z.sex[length(Z.sex)+1] <- NA
       names(Z.sex)[length(names(Z.sex))] <- rownames(Zna)[i]
