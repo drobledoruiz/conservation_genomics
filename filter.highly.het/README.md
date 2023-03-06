@@ -4,15 +4,15 @@ A function to filter out excessively-heterozygous SNPs that are likely to be spu
 
 This function requires as input:
 
-- **gl** - A genlight object.
+- **gl** - A genlight object in which ‘ind.metrics’ contains a column named ‘pop’ and each individual is assigned to one population.
 - **Yates** - Boolean (optional), to use Yates's continuity correction. Recommended for sample sizes < 20. *Set to FALSE by default.*
 
 This function produces as output:
 
 - A dataframe with information about excessively-heterozygous loci (removed loci).
 - A genlight object without excessively-heterozygous loci.
-- A vector with the names of the removed loci (i.e. excessively-heterozygous loci).
-- Two plots: one BEFORE plot with the heterozygosity of the loci present in the *input* genlight, and one AFTER plot with the heterozygosity of the loci present in the *output* genlight (i.e. without excessively-heterozygous loci).
+- A vector with the names of the removed loci (i.e., excessively-heterozygous loci).
+- Two plots: one BEFORE plot with the heterozygosity of the loci present in the *input* genlight, and one AFTER plot with the heterozygosity of the loci present in the *output* genlight (i.e., without excessively-heterozygous loci).
 
 
 ## Usage
