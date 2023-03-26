@@ -2,12 +2,14 @@
 ##         Function to filter sex-linked SNPs from a genlight object          ##
 ##                                                                            ##
 ##  Author: Diana A. Robledo-Ruiz. Research Fellow, Monash University         ##
-##  Date: 2022-06-07                                                          ##
+##  Date: 2023-03-08                                                          ##
 ##                                                                            ##
 ##  This function requires:                                                   ##
 ##   - Input: a genlight object with column 'sex' ('F' or 'M') in ind.metrics ##
 ##   - User specified parameters:                                             ##
 ##       - system = sex determination system ('zw' or 'xy').                  ##
+##       - plots = produce output plots (default is 'TRUE').                  ##
+##       - parallel = run in parallel (default is 'FALSE').                   ##
 ##                                                                            ##
 ##  Output:                                                                   ##
 ##   A list with 6 elements:                                                  ##
@@ -19,20 +21,42 @@
 ##    - $autosomal     -> Genlight object with autosomal loci                 ##
 ##                                                                            ##
 ## Index:                                                                     ##
-##   Line 27: Function                                                        ##
-##   Line 432: Example of use for filter.sex.linked                           ##
+##   Line 29: Function                                                        ##
+##   Line 586: Example of use for filter.sex.linked                           ##
 ################################################################################
 
 
 ############################## Defining function ###############################
-filter.sex.linked <- function(gl, system = 'zw') {
+filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE) {
 
+  start_time0 <- Sys.time()
+  if(parallel){
+    library(doParallel)
+    ncores <- detectCores()-1
+    cl <- makeCluster(ncores)
+    registerDoParallel(cl)
+  }
+
+  if(is.null(system)){
+    stop("You must specify the sex-determination system with the parameter 'system' ('zw' or 'xy').")
+  } else {
+    if(!(system == 'zw' | system == 'xy')){
+      stop("Parameter 'system' must be 'zw' or 'xy'.")
+    }
+  }
+  
   # Transform genotypes to matrix and transpose
   gen <- as.data.frame(t(as.matrix(gl)))
 
   # Extract IDs per sex (FUNCTION IGNORES ALL UNSEXED INDS!)
-  ids.F <- gl@other$ind.metrics[gl@other$ind.metrics$sex == 'F', 'id']
-  ids.M <- gl@other$ind.metrics[gl@other$ind.metrics$sex == 'M', 'id']
+  if(!("F" %in% gl@other$ind.metrics$sex | "M" %in% gl@other$ind.metrics$sex)){
+    stop("Females and males in @other$ind.metrics$sex must be 'F' or 'M', respectively.")
+  }
+  
+  ids.F <- gl@other$ind.metrics[gl@other$ind.metrics$sex == 'F' & !is.na(gl@other$ind.metrics$sex), 'id']
+  ids.M <- gl@other$ind.metrics[gl@other$ind.metrics$sex == 'M' & !is.na(gl@other$ind.metrics$sex), 'id']
+
+  message(paste("Detected ", length(ids.F), " females and ", length(ids.M), " males.", sep = ""))
 
   # Subset genotypes by sex
   gen.F <- gen[ , (colnames(gen) %in% ids.F)]
@@ -54,52 +78,96 @@ filter.sex.linked <- function(gl, system = 'zw') {
   table$count.F.scored <- rowSums(!is.na(gen.F))
   table$count.M.scored <- rowSums(!is.na(gen.M))
 
-  # Add empty columns for statistic and corresponding p-value
-  table$ratio   <- NA
-  table$p.value <- NA
+  if(parallel){
+    message("Starting phase 1. Working in parallel...")
+  } else {
+    message("Starting phase 1. May take a while...")
+  }
+  
+  # Apply Fisher's exact test (because there are observations with less than 5)
+  if(parallel){
+    xfisher <- foreach(i = 1:nrow(table), .combine = rbind)%dopar%{
+      # Make vector of observed values
+      obs <- matrix(c(table[i, "count.F.miss"],
+                      table[i, "count.M.miss"],
+                      table[i, "count.F.scored"],
+                      table[i, "count.M.scored"]),
+                    nrow = 2,
+                    ncol = 2,
+                    dimnames = list(c("F", "M"),
+                                    c("miss", "scored")))
 
-  message("Starting phase 1. May take a while...")
+      # See if it's possible to use chisq test
+      if (sum(obs) >= 1000) {
 
-  # Test for independece of sex and missingness
-  for (i in 1:nrow(table)) {
+        # Convert zeros to 1 to not obtain an error with chisq-test
+        obs[obs == 0] <- 1
 
-    # Make matrix of observed values
-    obs <- matrix(c(table[i, "count.F.miss"],
-                    table[i, "count.M.miss"],
-                    table[i, "count.F.scored"],
-                    table[i, "count.M.scored"]),
-                  nrow = 2,
-                  ncol = 2,
-                  dimnames = list(c("F", "M"),
-                                  c("miss", "scored")))
+        # Chisq-test
+        chisq.res <- chisq.test(obs, correct = FALSE)
+
+        # Add to results table
+        return(data.frame(ratio = chisq.res$statistic, p.value = chisq.res$p.value))
+
+      } else {
+        # Convert zeros to 1 to not obtain an error with Fisher's test
+        obs[obs == 0] <- 1
+
+        # Run Fisher's exact test
+        F.test <- fisher.test(obs)
+
+        # Add to results table
+        return(data.frame(ratio = F.test$estimate, p.value = F.test$p.value))
+      }
+    }
+    table <- cbind(table, xfisher)
+  } else {
+    # Add empty columns for chisq-statistic and corresponding p-value
+    table$ratio   <- NA
+    table$p.value <- NA
+    
+    # Test for independece of sex and missingness
+    for (i in 1:nrow(table)) {
+
+      # Make matrix of observed values
+      obs <- matrix(c(table[i, "count.F.miss"],
+                      table[i, "count.M.miss"],
+                      table[i, "count.F.scored"],
+                      table[i, "count.M.scored"]),
+                    nrow = 2,
+                    ncol = 2,
+                    dimnames = list(c("F", "M"),
+                                    c("miss", "scored")))
 
 
-    # See if it's possible to use chisq test
-    if (sum(obs) >= 1000) {
+      # See if it's possible to use chisq test
+      if (sum(obs) >= 1000) {
 
-      # Convert zeros to 1 to not obtain an error with chisq-test
-      obs[obs == 0] <- 1
+        # Convert zeros to 1 to not obtain an error with chisq-test
+        obs[obs == 0] <- 1
 
-      # Chisq-test
-      chisq.res <- chisq.test(obs, correct = FALSE)
+        # Chisq-test
+        chisq.res <- chisq.test(obs, correct = FALSE)
 
-      # Add to results table
-      table[i, "ratio"]         <- chisq.res$statistic
-      table[i, "p.value"] <- chisq.res$p.value
+        # Add to results table
+        table[i, "ratio"]   <- chisq.res$statistic
+        table[i, "p.value"] <- chisq.res$p.value
 
-    } else {
+      } else {
 
-      # Convert zeros to 1 to not obtain an error with Fisher's test
-      obs[obs == 0] <- 1
+        # Convert zeros to 1 to not obtain an error with Fisher's test
+        obs[obs == 0] <- 1
 
-      # Run Fisher's exact test
-      F.test <- fisher.test(obs)
+        # Run Fisher's exact test
+        F.test <- fisher.test(obs)
 
-      # Add to results table
-      table[i, "ratio"]   <- F.test$estimate
-      table[i, "p.value"] <- F.test$p.value
+        # Add to results table
+        table[i, "ratio"]   <- F.test$estimate
+        table[i, "p.value"] <- F.test$p.value
+      }
     }
   }
+  
 
   # Adjust p-values for multiple comparisons (False discovery rate)
   table$p.adjusted <- p.adjust(table$p.value, method = "fdr")
@@ -122,7 +190,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
       }
     }
   }
-
+  
   # For xy sex-determination system
   if(system == "xy") {
     table$y.linked <- NA
@@ -136,7 +204,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
     }
   }
 
-
+  
   ##### 1.2 Loci with sex-biased scoring rate
   table$sex.biased <- NA
 
@@ -147,50 +215,53 @@ filter.sex.linked <- function(gl, system = 'zw') {
       table[i, "sex.biased"] <- FALSE
     }
   }
-
-  message("Building call rate plots.")
-
-  ##### 1.3 Plot BEFORE vs AFTER
-  if(system == "zw") {
-    BEF.mis <- plot(x = table$scoringRate.F,
-                    y = table$scoringRate.M,
-                    main = "BEFORE",
-                    xlab = "Call rate Females",
-                    ylab = "Call rate Males",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
-
-    AFT.mis <- plot(x = table[table$w.linked == FALSE & table$sex.biased == FALSE,
-                              "scoringRate.F"],
-                    y = table[table$w.linked == FALSE & table$sex.biased == FALSE,
-                              "scoringRate.M"],
-                    main = "AFTER",
-                    xlab = "Call rate Females",
-                    ylab = "Call rate Males",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
+  
+    ##### 1.3 Plot BEFORE vs AFTER
+  if(plots) {
+    message("Building call rate plots.")
+    
+    # For zw sex-determination system
+    if(system == "zw") {
+      BEF.mis <- plot(x = table$scoringRate.F,
+                      y = table$scoringRate.M,
+                      main = "BEFORE",
+                      xlab = "Call rate Females",
+                      ylab = "Call rate Males",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+  
+      AFT.mis <- plot(x = table[table$w.linked == FALSE & table$sex.biased == FALSE,
+                                "scoringRate.F"],
+                      y = table[table$w.linked == FALSE & table$sex.biased == FALSE,
+                                "scoringRate.M"],
+                      main = "AFTER",
+                      xlab = "Call rate Females",
+                      ylab = "Call rate Males",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+    }
+  
+    # For xy sex-determination system
+    if(system == "xy") {
+      BEF.mis <- plot(x = table$scoringRate.F,
+                      y = table$scoringRate.M,
+                      main = "BEFORE",
+                      xlab = "Call rate Females",
+                      ylab = "Call rate Males",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+  
+      AFT.mis <- plot(x = table[table$y.linked == FALSE & table$sex.biased == FALSE,
+                                "scoringRate.F"],
+                      y = table[table$y.linked == FALSE & table$sex.biased == FALSE,
+                                "scoringRate.M"],
+                      main = "AFTER",
+                      xlab = "Call rate Females",
+                      ylab = "Call rate Males",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+    }
   }
-
-  if(system == "xy") {
-    BEF.mis <- plot(x = table$scoringRate.F,
-                    y = table$scoringRate.M,
-                    main = "BEFORE",
-                    xlab = "Call rate Females",
-                    ylab = "Call rate Males",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
-
-    AFT.mis <- plot(x = table[table$y.linked == FALSE & table$sex.biased == FALSE,
-                              "scoringRate.F"],
-                    y = table[table$y.linked == FALSE & table$sex.biased == FALSE,
-                              "scoringRate.M"],
-                    main = "AFTER",
-                    xlab = "Call rate Females",
-                    ylab = "Call rate Males",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
-  }
-
 
 
   #################### 2. Sex-linked loci by heterozygosity
@@ -205,59 +276,113 @@ filter.sex.linked <- function(gl, system = 'zw') {
                                na.rm = TRUE)
 
   # Add empty columns for statistic and corresponding p-value
-  table$stat         <- NA
-  table$stat.p.value <- NA
+  #  table$stat         <- NA
+  #  table$stat.p.value <- NA
 
-  message("Done building call rate plots. Starting phase 2.")
 
-  # Apply test for independence of sex and heterozygosity
-  for (i in 1:nrow(table)) {
+  message("Done. Starting phase 2.")
+  
+  if(parallel){
+    xstat <- foreach(i = 1:nrow(table), .combine = rbind)%dopar%{
 
-    # Exclude w.y-linked loci and loci with sex-biased score
-    if (table[i, 11] == TRUE | table[i, "sex.biased"] == TRUE) {
-      table[i, "stat"]         <- NA
-      table[i, "stat.p.value"] <- NA
-
-    } else {
-
-      # Make contingency table
-      contingency <- matrix(c(table[i, "count.F.het"],
-                              table[i, "count.M.het"],
-                              table[i, "count.F.hom"],
-                              table[i, "count.M.hom"]),
-                            nrow = 2,
-                            ncol = 2,
-                            dimnames = list(c("F", "M"), c("het", "hom")))
-
-      # See if it's possible to use chisq test
-      if (sum(contingency) >= 1000) {
-
-        # Convert zeros to 1 to not obtain an error with chisq-test
-        contingency[contingency == 0] <- 1
-
-        # Chisq-test
-        chisq.res <- chisq.test(contingency, correct = FALSE)
-
-        # Add to results table
-        table[i, "stat"]         <- chisq.res$statistic
-        table[i, "stat.p.value"] <- chisq.res$p.value
+      # Exclude w.y-linked loci and loci with sex-biased score
+      if (table[i, 11] == TRUE | table[i, "sex.biased"] == TRUE) {
+        stat.value <- NA
+        stat.p.value <- NA
 
       } else {
 
-        # Convert zeros to 1 to not obtain an error with Fisher's test
-        contingency[contingency == 0] <- 1
+        # Make contingency table
+        contingency <- matrix(c(table[i, "count.F.het"],
+                                table[i, "count.M.het"],
+                                table[i, "count.F.hom"],
+                                table[i, "count.M.hom"]),
+                              nrow = 2,
+                              ncol = 2,
+                              dimnames = list(c("F", "M"), c("het", "hom")))
 
-        # Run Fisher's exact test
-        F.test <- fisher.test(contingency)
+        # Check if Yate's correction is necessary (n =< 20, Sokhal & Rohlf 1995)
+        if (sum(contingency) >= 1000) {
 
-        # Add to results table
-        table[i, "stat"]         <- F.test$estimate
-        table[i, "stat.p.value"] <- F.test$p.value
+          # Convert zeros to 1 to not obtain an error with chisq-test
+          contingency[contingency == 0] <- 1
+
+          # Chisq-test
+          chisq.res <- chisq.test(contingency, correct = FALSE)
+
+          # Add to results table
+          stat.value   <- chisq.res$statistic
+          stat.p.value <- chisq.res$p.value
+
+        } else {
+
+          # Convert zeros to 1 to not obtain an error with chisq-test
+          contingency[contingency == 0] <- 1
+
+          # Run Fisher's exact test
+          F.test <- fisher.test(contingency)
+
+          # Add to results table
+          stat.value   <- F.test$estimate
+          stat.p.value <- F.test$p.value
+        }
+      }
+      return(data.frame(stat = stat.value, stat.p.value = stat.p.value))
+    }
+    table <- cbind(table,xstat)
+  } else {
+    
+    # Add empty columns for statistic and corresponding p-value
+    table$stat         <- NA
+    table$stat.p.value <- NA
+    
+    # Apply test for independence of sex and heterozygosity
+    for (i in 1:nrow(table)) {
+
+      # Exclude w.y-linked loci and loci with sex-biased score
+      if (table[i, 11] == TRUE | table[i, "sex.biased"] == TRUE) {
+        table[i, "stat"]         <- NA
+        table[i, "stat.p.value"] <- NA
+
+      } else {
+
+        # Make contingency table
+        contingency <- matrix(c(table[i, "count.F.het"],
+                                table[i, "count.M.het"],
+                                table[i, "count.F.hom"],
+                                table[i, "count.M.hom"]),
+                              nrow = 2,
+                              ncol = 2,
+                              dimnames = list(c("F", "M"), c("het", "hom")))
+
+        # See if it's possible to use chisq test
+        if (sum(contingency) >= 1000) {
+
+          # Convert zeros to 1 to not obtain an error with chisq-test
+          contingency[contingency == 0] <- 1
+
+          # Chisq-test
+          chisq.res <- chisq.test(contingency, correct = FALSE)
+
+          # Add to results table
+          table[i, "stat"]         <- chisq.res$statistic
+          table[i, "stat.p.value"] <- chisq.res$p.value
+
+        } else {
+
+          # Convert zeros to 1 to not obtain an error with Fisher's test
+          contingency[contingency == 0] <- 1
+
+          # Run Fisher's exact test
+          F.test <- fisher.test(contingency)
+
+          # Add to results table
+          table[i, "stat"]         <- F.test$estimate
+          table[i, "stat.p.value"] <- F.test$p.value
+        }
       }
     }
   }
-
-  message("Building heterozygosity plots.")
 
   # Adjust p-values for multiple comparisons (False discovery rate, least conservative)
   table$stat.p.adjusted <- p.adjust(table$stat.p.value, method = "fdr")
@@ -267,7 +392,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
 
   table$heterozygosity.M <- table$count.M.het/(table$count.M.het+table$count.M.hom)
 
-
+  
   ##### 2.1 Z-linked or X-linked loci AND gametologs
   # For zw sex-determination system
   if(system == "zw") {
@@ -278,8 +403,8 @@ filter.sex.linked <- function(gl, system = 'zw') {
       # Exclude w-linked loci and loci with sex-biased score
       if (!is.na(table[i, "stat.p.adjusted"])) {
         # Exclude autosomal
-        if (table[i, "stat.p.adjusted"] <= 0.05) {
-          # Identify if heterozigosity is larger in males
+        if (table[i, "stat.p.adjusted"] <= 0.01) {
+          # Identify if heterozygosity is larger in males
           if (table[i, "heterozygosity.M"] > table[i, "heterozygosity.F"]) {
             table[i, "z.linked"] <- TRUE
           } else {
@@ -289,7 +414,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
       }
     }
   }
-
+  
   # For xy sex-determination system
   if(system == "xy") {
     table$x.linked     <- FALSE
@@ -299,7 +424,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
       # Exclude y-linked loci and loci with sex-biased score
       if (!is.na(table[i, "stat.p.adjusted"])) {
         # Exclude autosomal
-        if (table[i, "stat.p.adjusted"] <= 0.05) {
+        if (table[i, "stat.p.adjusted"] <= 0.01) {
           # Identify if heterozygosity is larger in females
           if (table[i, "heterozygosity.F"] > table[i, "heterozygosity.M"]) {
             table[i, "x.linked"] <- TRUE
@@ -313,57 +438,60 @@ filter.sex.linked <- function(gl, system = 'zw') {
 
 
   ##### 2.2 Plot BEFORE vs AFTER
-  # For zw sex-determination system
-  if(system == "zw") {
-    BEF.het <- plot(x = table$heterozygosity.F,
-                    y = table$heterozygosity.M,
-                    xlab = "% Heterozygous Females",
-                    ylab = "% Heterozygous Males",
-                    main = "BEFORE",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
-
-    AFT.het <- plot(x = table[table$w.linked     == FALSE &
-                                table$sex.biased   == FALSE &
-                                table$z.linked     == FALSE &
-                                table$zw.gametolog == FALSE, "heterozygosity.F"],
-                    y = table[table$w.linked     == FALSE &
-                                table$sex.biased   == FALSE &
-                                table$z.linked     == FALSE &
-                                table$zw.gametolog == FALSE, "heterozygosity.M"],
-                    main = "AFTER",
-                    xlab = "% Heterozygous Females",
-                    ylab = "% Heterozygous Males",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
+  if(plots) {
+    message("Building heterozygosity plots.")
+    
+    # For zw sex-determination system
+    if(system == "zw") {
+      BEF.het <- plot(x = table$heterozygosity.F,
+                      y = table$heterozygosity.M,
+                      xlab = "% Heterozygous Females",
+                      ylab = "% Heterozygous Males",
+                      main = "BEFORE",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+  
+      AFT.het <- plot(x = table[table$w.linked       == FALSE &
+                                  table$sex.biased   == FALSE &
+                                  table$z.linked     == FALSE &
+                                  table$zw.gametolog == FALSE, "heterozygosity.F"],
+                      y = table[table$w.linked       == FALSE &
+                                  table$sex.biased   == FALSE &
+                                  table$z.linked     == FALSE &
+                                  table$zw.gametolog == FALSE, "heterozygosity.M"],
+                      main = "AFTER",
+                      xlab = "% Heterozygous Females",
+                      ylab = "% Heterozygous Males",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+    }
+  
+    # For xy sex-determination system
+    if(system == "xy") {
+      BEF.het <- plot(x = table$heterozygosity.F,
+                      y = table$heterozygosity.M,
+                      xlab = "% Heterozygous Females",
+                      ylab = "% Heterozygous Males",
+                      main = "BEFORE",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+  
+      AFT.het <- plot(x = table[table$y.linked     == FALSE &
+                                  table$sex.biased   == FALSE &
+                                  table$x.linked     == FALSE &
+                                  table$xy.gametolog == FALSE, "heterozygosity.F"],
+                      y = table[table$y.linked     == FALSE &
+                                  table$sex.biased   == FALSE &
+                                  table$x.linked     == FALSE &
+                                  table$xy.gametolog == FALSE, "heterozygosity.M"],
+                      main = "AFTER",
+                      xlab = "% Heterozygous Females",
+                      ylab = "% Heterozygous Males",
+                      xlim = c(0, 1),
+                      ylim = c(0, 1))
+    }
+    message("Done building heterozygosity plots.")
   }
-
-  # For xy sex-determination system
-  if(system == "xy") {
-    BEF.het <- plot(x = table$heterozygosity.F,
-                    y = table$heterozygosity.M,
-                    xlab = "% Heterozygous Females",
-                    ylab = "% Heterozygous Males",
-                    main = "BEFORE",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
-
-    AFT.het <- plot(x = table[table$y.linked     == FALSE &
-                                table$sex.biased   == FALSE &
-                                table$x.linked     == FALSE &
-                                table$xy.gametolog == FALSE, "heterozygosity.F"],
-                    y = table[table$y.linked     == FALSE &
-                                table$sex.biased   == FALSE &
-                                table$x.linked     == FALSE &
-                                table$xy.gametolog == FALSE, "heterozygosity.M"],
-                    main = "AFTER",
-                    xlab = "% Heterozygous Females",
-                    ylab = "% Heterozygous Males",
-                    xlim = c(0, 1),
-                    ylim = c(0, 1))
-  }
-
-  message("Done building heterozygosity plots.")
 
   #################### 3. Create output of function
   ##### 3.1 Save the indices of each category of loci to later subset gl
@@ -375,17 +503,17 @@ filter.sex.linked <- function(gl, system = 'zw') {
     d <- table[table$zw.gametolog == TRUE, "index"]
 
     autosomal <- table[table$w.linked     == FALSE &
-                         table$sex.biased   == FALSE &
-                         table$z.linked     == FALSE &
-                         table$zw.gametolog == FALSE, "index"]
+                       table$sex.biased   == FALSE &
+                       table$z.linked     == FALSE &
+                       table$zw.gametolog == FALSE, "index"]
 
     message("**FINISHED** Total of analyzed loci: ", nrow(table), ".\n",
             "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
-            "   ", length(a), " W-linked loci\n",
-            "   ", length(b), " sex-biased loci\n",
-            "   ", length(c), " Z-linked loci\n",
-            "   ", length(d), " ZW gametolog loci.\n",
-            "And ", length(autosomal), " autosomal loci.")
+            "   ",    length(a), " W-linked loci\n",
+            "   ",    length(b), " sex-biased loci\n",
+            "   ",    length(c), " Z-linked loci\n",
+            "   ",    length(d), " ZW gametologs.\n",
+            "And ",   length(autosomal), " autosomal loci.")
   }
 
   if(system == "xy") {
@@ -395,17 +523,17 @@ filter.sex.linked <- function(gl, system = 'zw') {
     d <- table[table$xy.gametolog == TRUE, "index"]
 
     autosomal <- table[table$y.linked     == FALSE &
-                         table$sex.biased   == FALSE &
-                         table$x.linked     == FALSE &
-                         table$xy.gametolog == FALSE, "index"]
+                       table$sex.biased   == FALSE &
+                       table$x.linked     == FALSE &
+                       table$xy.gametolog == FALSE, "index"]
 
-    message("Done analyzing ", nrow(table), " loci.\n",
+    message("**FINISHED** Total of analyzed loci: ", nrow(table), ".\n",
             "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
-            length(a), " Y-linked loci\n",
-            length(b), " sex-biased loci\n",
-            length(c), " X-linked loci\n",
-            length(d), " XY gametolog loci.\n",
-            "And ", length(autosomal), " autosomal loci.")
+            "   ",    length(a), " Y-linked loci\n",
+            "   ",    length(b), " sex-biased loci\n",
+            "   ",    length(c), " X-linked loci\n",
+            "   ",    length(d), " XY gametologs.\n",
+            "And ",   length(autosomal), " autosomal loci.")
   }
 
 
@@ -443,7 +571,13 @@ filter.sex.linked <- function(gl, system = 'zw') {
                     "z.linked"      = C,
                     "gametolog"     = D,
                     "autosomal"     = gl.autosomal)}
-
+  end_time0 <- Sys.time()
+  print(sprintf("Run time: %s", end_time0-start_time0))
+  
+  if(parallel){
+    stopCluster(cl)
+  }
+  
   return(rlist)
 }
 ################################################################################
@@ -451,5 +585,7 @@ filter.sex.linked <- function(gl, system = 'zw') {
 
 ################################ Example of use ################################
 ## filtered.data <- filter.sex.linked(gl = my.genlight,                       ##
-##                                    system = "xy")                          ##
+##                                    system = "xy",                          ##
+##                                    plots = FALSE,                          ##
+##                                    parallel = TRUE)                        ##
 ################################################################################

@@ -1,30 +1,51 @@
 # filter.sex.linked
 
-It identifies four types of sex-linked loci using individuals with assigned sex. 
+This function identifies four types of sex-linked loci using individuals with known sex. 
 
 This function requires as input:
   - A genlight object in which genlight@others$ind.metrics has a column named 'sex' and individuals are assigned 'F' or 'M'. The function ignores individuals that are assigned anything else or nothing at all.
-  - The sex determination system of the species. Default is 'zw' but can be set to 'xy'.
-  
+  - The sex determination system of the species: 'zw' or 'xy'.
+
+This function has two parameters that can be modified by the user:
+  - 'plots', specifies whether the function should produce the four output plots ('TRUE' or 'FALSE'). *Set to 'TRUE' by default.*
+  - 'parallel', specifies whether the function should run in parallel, which saves time ('TRUE' or 'FALSE'). *Set to 'FALSE' by default.*
+
 This function produces as output:
   - A list with 6 elements:
       1. A Results Table (see description below).
-      2. Genlight object with w-linked/y-linked loci.
-      3. Genlight object with sex-biased call rate loci.
-      4. Genlight object with z-linked/x-linked loci.
-      5. Genlight object with zw-gametolog/xy-gametolog loci.
-      6. Genlight object with **autosomal loci**.
+      2. Genlight object with **w-linked/y-linked** loci.
+      3. Genlight object with **sex-biased** call rate loci.
+      4. Genlight object with **z-linked/x-linked** loci.
+      5. Genlight object with **gametologous** loci.
+      6. Genlight object with **autosomal** loci.
   - Four plots:
       1. A plot BEFORE filtering sex-linked loci by call rate.
       2. A plot AFTER filtering sex-linked loci by call rate.
       3. A plot BEFORE filtering sex-linked loci by heterozygosity.
       4. A plot AFTER filtering sex-linked loci by heterozygosity.
 
+## Dependencies
+- [doParallel](https://cran.r-project.org/web/packages/doParallel/index.html)
+
+
+
 ## Usage
+
+To use the function it is necesary to save the file *filter.sex.linked.R*, and load it to *R*:
+
+```
+source('/path_to_function/filter.sex.linked.R')
+```
+
+Then the function can be called:
 ```
 filtered.data <- filter.sex.linked(gl = my.genlight,
-                                   system = "xy")
+                                   system = "xy",
+                                   plots = TRUE,
+                                   parallel = TRUE)
 ```
+
+Setting parameter 'plots = FALSE' saves a little bit of running time for very large datasets (> 50,000 SNPs), especially if not run in parallel. However, we **strongly** encourage to always inspect the output plots at least once to make sure everything is working properly.
 
 The output *filtered.data* contains 6 elements that can be called as:
 
@@ -32,7 +53,7 @@ The output *filtered.data* contains 6 elements that can be called as:
    - **filtered.data$w.linked** or **filtered.data$y.linked** - Genlight object with w-linked/y-linked loci.
    - **filtered.data$sex.biased**    - Genlight object with sex-biased call rate loci.
    - **filtered.data$z.linked** or **filtered.data$x.linked**     - Genlight object with z-linked/x-linked loci.
-   - **filtered.data$gametolog**     - Genlight object with zw-gametolog/xy-gametolog loci.
+   - **filtered.data$gametolog**     - Genlight object with gametologous loci.
    - **filtered.data$autosomal**     - Genlight object with autosomal loci.
 
 The results table has the folowing structure:
@@ -72,7 +93,7 @@ With loci being in rows and columns meaning:
 ## How the function works
 The function works in 2 phases:
 1. Use loci call rate per sex to identify w-linked/y-linked loci and loci with sex-biased call rate.
-2. Use the proportion of heterozygous males and females per loci to identify z-linked/x-linked loci and zw-gametologs.
+2. Use the proportion of heterozygous males and females per loci to identify z-linked/x-linked loci and gametologs.
 
 **Phase 1:**
   1. It creates a Results Table with loci in rows.
@@ -91,8 +112,8 @@ The function works in 2 phases:
   3. It builds a contingency table and performs a Fisher's exact test to test for the independence of heterozygosity and sex per locus. It then adds to the Results Table a column with the Fisher's exact test estimate (column 'stat') and its respective p-value (column 'stat.p.value'). The rationale is that autosomal loci should present no difference in heterozygosity rate between the sexes, and therefore, a locus in which heterozygosity is biased by sex (i.e. there are significantly more or fewer heterozygote individuals from one sex than the other sex) is likely to be sex-linked.
   4. It adjusts p-values to control for the false discovery rate and adds column 'stat.p.adjusted' to the Results Table.
   5. It adds columns 'heterozygosity.F' and 'heterozygosity.M' with the proportion of females and males that are heterozygous ('1') for each locus, respectively. It outputs a plot with 'Proportion of heterozygous females' in the x axis and 'Proportion of heterozygous males' in the y axis in which each point is a locus. This is the BEFORE filtering plot. Autosomal loci should have roughly the same proportion of heterozygous males and females, forming a cloud of points in a diagonal line.
-  6. It adds column 'z.linked' in which a locus is signalled as z-linked (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous males is greater than the proportion of heterozygous females (because females only have one Z chromosome). Or it adds column 'x.linked' in which a locus is signalled as x-linked (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous females is greater than the proportion of heterozygous males (because males only have one X chromosome).
-  7. It adds column 'zw.gametolog' in which a locus is signalled as zw-gametolog (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous males is smaller than the proportion of heterozygous females. Or it adds column 'xy.gametolog' in which a locus is signalled as xy-gametolog (TRUE) if its adjusted p-value is < 0.05 and the proportion of heterozygous females is smaller than the proportion of heterozygous males.
+  6. It adds column 'z.linked' in which a locus is signalled as z-linked (TRUE) if its adjusted p-value is < 0.01 and the proportion of heterozygous males is greater than the proportion of heterozygous females (because females only have one Z chromosome). Or it adds column 'x.linked' in which a locus is signalled as x-linked (TRUE) if its adjusted p-value is < 0.01 and the proportion of heterozygous females is greater than the proportion of heterozygous males (because males only have one X chromosome).
+  7. It adds column 'zw.gametolog' in which a locus is signalled as zw-gametolog (TRUE) if its adjusted p-value is < 0.01 and the proportion of heterozygous males is smaller than the proportion of heterozygous females. Or it adds column 'xy.gametolog' in which a locus is signalled as xy-gametolog (TRUE) if its adjusted p-value is < 0.01 and the proportion of heterozygous females is smaller than the proportion of heterozygous males.
   8. It outputs the same plot as step 5 but removing z-linked/x-linked and gametolog loci. This is the AFTER filtering plot and should have only loci (points) that are roughly in the diagonal line.
   
   
