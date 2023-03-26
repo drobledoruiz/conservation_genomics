@@ -1,6 +1,6 @@
 # filter.excess.het
 
-A function to filter out excessively-heterozygous SNPs that are likely to be spurious multilocus SNPs (i.e., products of erroneously fusing two physically separate loci that are very similar). This function considers a locus as excessively-heterozygous if it (i) presents an heterozygosity > 0.5, AND (ii) presents a significant excess of observed heterozygous individuals from those expected according to Hardy-Weinberg equilibrium. These criteria are evaluated per population. This is, if a locus is found to fullfill both (i) and (ii) in ANY population, it is considered as excessively-heterozygous and is removed.
+A function to filter out excessively-heterozygous SNPs that are likely to be spurious multilocus SNPs (i.e., products of erroneously fusing multiple physically separate loci that are very similar). This function considers a locus as excessively-heterozygous if it (i) presents an heterozygosity > 0.5, *and* (ii) presents a significant excess of observed heterozygous individuals from those expected according to Hardy-Weinberg equilibrium. These criteria are evaluated per population. This is, if a locus is found to fullfill both (i) and (ii) in *any* population, it is considered as excessively-heterozygous and is removed.
 
 This function requires as input:
 
@@ -17,13 +17,13 @@ This function produces as output:
 
 ## Usage
 
-To use the function it is necesary to load the file *filter.excess.het.R*:
+To use the function it is necesary to save the file *filter.excess.het.R*, and load it to *R*:
 
 ```
 source('/path_to_function/filter.excess.het.R')
 ```
 
-Then the function can be called:
+Then the function can be used:
 
 ```
 filtered.data <- filter.excess.het(gl = my.genlight,           

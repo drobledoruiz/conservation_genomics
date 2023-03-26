@@ -6,9 +6,9 @@ This function requires as input:
 
  - **gl** -- A genlight object in which genlight@others$ind.metrics has three columns named ["father","mother","offspring"] with boolean values ("yes" or "no") indicating if the individual is considered to be "father","mother", and/or "offspring". The function ignores uppercases in column names and values.
  
-- **filename_out** -- String, name of the output colony2-formated file.
+- **filename_out** -- String, name of the output file (in COLONY format).
 
-And Colony2 parameters:
+This function requires as parameters (needed for COLONY):
 
 - **project_name** -- String, name of the project, should be a string containing less than 40 letters and numbers. *Set to 'my_project' by default.* 
 	
@@ -81,19 +81,19 @@ We refer the user to the [Colony2 user manual](https://usermanual.wiki/Document/
 - [crayon](https://cran.r-project.org/web/packages/crayon/index.html)
 
 
-## Intructions
+## Instructions
 
-To use the function *gl2colony* it is necesary to load the file *gl2colony.R*:
+* To use the function *gl2colony* it is necesary to save the file *gl2colony.R* and load it to *R*:
 
 ```
 source('/path_to_function/gl2colony.R')
 ```
 
-Then the function can be called. Here we show an example of its use with some non-default parameters: 
+Then the function can be used. Here we show an example of its use with some non-default parameters: 
 
 ```
 gl2colony(gl = my.genlight,                                               
-          filename_out = "colony2.dat",                                     
+          filename_out = "/path_to_output/colony2.dat",                                     
           project_name = "parentage_fish_2022",                             
           output_name =  "parentage_fish_jul_2022",                       
           seed = 1234,                                                    
@@ -104,7 +104,7 @@ gl2colony(gl = my.genlight,
           other_typ_err = '0.001@')
 ```
 
-This creates the file "colony2.dat" whose first 26 rows (i.e. header) read as:
+This creates the file "colony2.dat" whose first 26 rows (i.e., the header) reads as:
 
 ```
 parentage_fish_2022 
