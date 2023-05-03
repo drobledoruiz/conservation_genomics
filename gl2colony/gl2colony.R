@@ -99,18 +99,14 @@ gl2colony <- function(gl = NULL,
 
   n_total <- n_offspring + n_mums + n_dads
 
-  message(sprintf('%d Offsprings detected. \n%d Fathers detected. \n%d Mothers detected.\n', n_offspring, n_dads, n_mums))
+  message(sprintf('%d Offspring detected. \n%d Fathers detected. \n%d Mothers detected.\n', n_offspring, n_dads, n_mums))
 
-  if( !length(dad_ids) ) {
-      stop('Missing parenthal IDs.')
-  }
-
-  if( !length(mum_ids) ) {
-      stop('Missing maternal IDs.')
+  if( !length(dad_ids) && !length(mum_ids)) {
+    message('Missing paternal and maternal IDs: only sibship inference will be possible.')
   }
 
   if( !length(offspring_ids) ) {
-      stop('Missing offspring IDs.')
+    stop('Missing offspring IDs.')
   }
 
   # Transform genlight object to structure format
@@ -122,12 +118,20 @@ gl2colony <- function(gl = NULL,
   offspring_gen <- str_1row_with0s[offspring_geno_to_keep,]  # keep only offspring genotypes
 
   # Subset structure dataset with only mums
-  mum_geno_to_keep <- match(mum_ids, rownames(str_1row_with0s))  
-  mum_gen <- str_1row_with0s[mum_geno_to_keep,]  # keep only mum genotypes
+  if(length(mum_ids) > 0) {
+    mum_geno_to_keep <- match(mum_ids, rownames(str_1row_with0s))
+    mum_gen <- str_1row_with0s[mum_geno_to_keep,]  # keep only mum genotypes
+  } else {
+    probability_mother = 0
+  }
 
   # Subset structure dataset with only dads
-  dad_geno_to_keep <- match(dad_ids, rownames(str_1row_with0s))  
-  dad_gen <- str_1row_with0s[dad_geno_to_keep,]  # keep only dad genotypes
+  if(length(dad_ids) > 0) {
+    dad_geno_to_keep <- match(dad_ids, rownames(str_1row_with0s))
+    dad_gen <- str_1row_with0s[dad_geno_to_keep,]  # keep only dad genotypes
+  } else {
+    probability_father = 0
+  }
 
   ###################### 1. Create header for COLONY2 file
   head_comments <- list('! No. offspring',
@@ -193,24 +197,28 @@ gl2colony <- function(gl = NULL,
   sink()
   
   ################# 4. Add dads genotypes to COLONY2 file
-  message(sprintf("(%d%%) Working on it...", round(n_offspring*100/n_total,0)))
-  write.table(dad_gen,
-              file = filename_out,
-              append = TRUE,
-              quote = FALSE, 
-              col.names = FALSE)
-
-  sink(filename_out, append = TRUE)
-  cat('\n')
-  sink()
+  if(length(dad_ids) > 0){
+    message(sprintf("(%d%%) Working on it...", round(n_offspring*100/n_total,0)))
+    write.table(dad_gen,
+                file = filename_out,
+                append = TRUE,
+                quote = FALSE,
+                col.names = FALSE)
+  
+    sink(filename_out, append = TRUE)
+    cat('\n')
+    sink()
+  }
   
   ################# 5. Add mums genotypes to COLONY2 file
-  message(sprintf("(%d%%) Almost there...", round((n_offspring + n_dads)*100/n_total,0)))
-  write.table(mum_gen,
-              file = filename_out,
-              append = TRUE,
-              quote = FALSE, 
-              col.names = FALSE)
+  if(length(mum_ids) > 0){
+    message(sprintf("(%d%%) Almost there...", round((n_offspring + n_dads)*100/n_total,0)))
+    write.table(mum_gen,
+                file = filename_out,
+                append = TRUE,
+                quote = FALSE,
+                col.names = FALSE)
+  }
               
   ################ 6. Add last parameters to COLONY2 file
   last_comments <- list('! Number of offspring with known paternity, exclusion threshold',
