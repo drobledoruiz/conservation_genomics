@@ -1,6 +1,12 @@
 # Easy-to-use R functions for conservation genomics
 
-A toolset written in *R* for quick and easy handling of genomic data to do common analyses for the genetic management of endangered populations. These functions are introduced in the preprint: Robledo-Ruiz et al. **Easy-to-use R functions to separate reduced-representation genomic datasets into sex-linked and autosomal loci, and conduct sex-assignment**. Authorea. December 02, 2022 (https://www.authorea.com/doi/full/10.22541/au.166998603.34117027/v1). **Do check each function directory for further details on usage.**
+A toolset written in *R* for quick and easy handling of genomic data to do common analyses for the genetic management of endangered populations. These functions are introduced in: 
+
+Robledo-Ruiz et al. (2023) Easy-to-use R functions to separate reduced-representation genomic datasets into sex-linked and autosomal loci, and conduct sex-assignment. _Molecular Ecology Resources_. (https://doi.org/10.1111/1755-0998.13844). 
+
+**If you use our functions, please cite this article**. You can watch a short video abstract of the paper here: https://vimeo.com/840300860 
+
+Do check each function directory for further details on usage.
 
 ## Functions
 
@@ -50,6 +56,7 @@ filtered_data <- filter.sex.linked(gl_EYR, system = "zw")
 ```
 
 ---------------------------------------------------------------------------
-Contact:
+## Contact
+Don't hesitate to write asking any questions. We are happy to help!
 - Diana Robledo-Ruiz, diana.robledoruiz1@monash.edu
 - Jesus Castrejon-Figueroa, jcastrejon@ciencias.unam.mx
