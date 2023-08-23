@@ -3,7 +3,7 @@
 This function identifies four types of sex-linked loci using individuals with known sex. 
 
 This function requires as input:
-  - A genlight object in which genlight@others$ind.metrics has a column named 'sex' and individuals are assigned 'F' or 'M'. The function ignores individuals that are assigned anything else or nothing at all.
+  - A genlight object in which genlight@other$ind.metrics has a column named 'sex' and individuals are assigned 'F' or 'M'. The function ignores individuals that are assigned anything else or nothing at all.
   - The sex determination system of the species: 'zw' or 'xy'.
 
 This function has two parameters that can be modified by the user:
