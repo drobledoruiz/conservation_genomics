@@ -1,10 +1,11 @@
 # Easy-to-use R functions for conservation genomics
 
-A toolset written in *R* for quick and easy handling of genomic data to do common analyses for the genetic management of endangered populations. These functions are introduced in: 
+A toolset written in *R* for quick and easy handling of genomic data to do common analyses for the genetic management of endangered populations.
 
-Robledo-Ruiz et al. (2023) Easy-to-use R functions to separate reduced-representation genomic datasets into sex-linked and autosomal loci, and conduct sex-assignment. _Molecular Ecology Resources_. (https://doi.org/10.1111/1755-0998.13844). 
+**If you use our functions, PLEASE CITE THIS ARTICLE:**. 
+Robledo-Ruiz et al. (2023) Easy-to-use R functions to separate reduced-representation genomic datasets into sex-linked and autosomal loci, and conduct sex-assignment. _Molecular Ecology Resources_. (https://doi.org/10.1111/1755-0998.13844).
 
-**If you use our functions, please cite this article**. You can watch a short video abstract of the paper here: https://vimeo.com/840300860 
+You can watch a short video abstract of the paper here: https://vimeo.com/840300860 
 
 Do check each function directory for further details on usage.
 
@@ -21,10 +22,7 @@ The functions require as input a genlight object. Genlight objects were original
 
 For a great explanation on how to obtain a genlight object **from DArTseq data** check: http://georges.biomatix.org/storage/app/media/uploaded-files/tutorial3adartrdatastructuresandinput22-dec-21-2.pdf. 
 
-For an explanation on how to obtain genlight objects from **non-DArTseq data (e.g., RADseq)** check page 13 of: http://georges.biomatix.org/storage/app/media/uploaded-files/tutorial3bdartrdatastructuresandinputfromsourcesotherthandartlmagv2-2.pdf. 
-
 If you have DArTseq data, the easiest way to obtain a genlight object is:
-
 ```
 # Install dartR
 install.packages("dartR")
@@ -39,6 +37,32 @@ gl
 # Check individual's metafile
 View(gl@other$ind.metrics)
 ```
+
+For an explanation on how to obtain genlight objects from **non-DArTseq data (e.g., RADseq or WGRe-seq)** check page 13 of: http://georges.biomatix.org/storage/app/media/uploaded-files/tutorial3bdartrdatastructuresandinputfromsourcesotherthandartlmagv2-2.pdf. 
+
+Alternatively, if you have a vcf file, the easiest way to obtain a genlight object is:
+```
+# Install vcfR
+install.packages("vcfR")
+library(vcfR)
+
+# Import vcf
+vcf <- read.vcfR("/path_to/file.vcf")
+
+# Transform vcf to genlight object
+gl <- vcfR2genlight(vcf)
+
+# Call genlight object
+gl
+
+# Import individual's metafile
+metafile <- read.csv(file = "/path_to/individual_metafile.csv")
+
+# Add individual's metafile to genlight object
+gl@other$ind.metrics <- metafile
+```
+
+
 
 You can test our functions on the small datasets that we include in 'data' directory. Download the data files and functions files to your computer and load them to *R*:
 ```
@@ -57,6 +81,6 @@ filtered_data <- filter.sex.linked(gl_EYR, system = "zw")
 
 ---------------------------------------------------------------------------
 ## Contact
-Don't hesitate to write asking any questions. We are happy to help!
+Do not hesitate to write to us asking any questions. We are happy to help!
 - Diana Robledo-Ruiz, diana.robledoruiz1@monash.edu
 - Jesus Castrejon-Figueroa, jcastrejon@ciencias.unam.mx
