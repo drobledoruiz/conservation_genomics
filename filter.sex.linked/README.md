@@ -1,9 +1,12 @@
 # filter.sex.linked
 
+**If you use our functions, PLEASE CITE THIS ARTICLE:**. 
+Robledo-Ruiz et al. (2023) Easy-to-use R functions to separate reduced-representation genomic datasets into sex-linked and autosomal loci, and conduct sex-assignment. _Molecular Ecology Resources_. (https://doi.org/10.1111/1755-0998.13844).
+
 This function identifies four types of sex-linked loci using individuals with known sex. 
 
 This function requires as input:
-  - A genlight object in which genlight@other$ind.metrics has a column named 'sex' and individuals are assigned 'F' or 'M'. The function ignores individuals that are assigned anything else or nothing at all.
+  - A genlight object in which genlight@other$ind.metrics has a column named 'id', and a column named 'sex' in which individuals are assigned 'F' or 'M'. The function ignores individuals that are assigned anything else or nothing at all.
   - The sex determination system of the species: 'zw' or 'xy'.
 
 This function has two parameters that can be modified by the user:
