@@ -1,4 +1,6 @@
 # infer.sex
+**If you use our functions, PLEASE CITE THIS ARTICLE:**. 
+Robledo-Ruiz et al. (2023) Easy-to-use R functions to separate reduced-representation genomic datasets into sex-linked and autosomal loci, and conduct sex-assignment. _Molecular Ecology Resources_. (https://doi.org/10.1111/1755-0998.13844).
 
 This function uses the output of function *filter.sex.linked* (list of 6 genlight objects) to infer the sex of all individuals. It uses 3 types of sex-linked loci (W-linked/Y-linked, Z-linked/X-linked, and gametologs), assigns a genetic sex for each type available, and outputs an agreed sex. **We created this function with the explicit intent that a human checks the evidence for the sex assignments that do NOT agree for all types of sex-linked loci** (denoted as '*M' or '*F'). This human can then use their criterion to validate these assignments.
 
