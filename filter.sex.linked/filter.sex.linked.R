@@ -539,19 +539,10 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
 
   ##### 3.2 Subset gl object (according to IntroTutorial_dartR.pdf, page 32)
   A <- gl[ , a]  # Loci are columns
-  A@other$loc.metrics <- A@other$loc.metrics[a, ]
-
   B <- gl[ , b]
-  B@other$loc.metrics <- B@other$loc.metrics[b, ]
-
   C <- gl[ , c]
-  C@other$loc.metrics <- C@other$loc.metrics[c, ]
-
   D <- gl[ , d]
-  D@other$loc.metrics <- D@other$loc.metrics[d, ]
-
   gl.autosomal <- gl[ , autosomal]
-  gl.autosomal@other$loc.metrics <- gl.autosomal@other$loc.metrics[autosomal, ]
 
 
 
