@@ -52,8 +52,13 @@ infer.sex <- function(gl_sex_filtered, system = NULL, seed = NULL) {
   
   # Gametologs
   gl3    <- gl_sex_filtered$gametolog
-  table  <- gl_sex_filtered$results.table        # Retrieve table
-  all    <- table[table$zw.gametolog == TRUE, ]  # Gametologs
+  table  <- gl_sex_filtered$results.table          # Retrieve table
+
+  if(system == "zw") {
+    all    <- table[table$zw.gametolog == TRUE, ]  # Gametologs
+  } else {
+    all    <- table[table$xy.gametolog == TRUE, ]  # Gametologs
+  }
   all    <- all[order(all$stat.p.adjusted), ]    # Order from smallest p-value
   useful <- row.names(all[1:5, ])                # Keep name of only top 5 gametologs
   
