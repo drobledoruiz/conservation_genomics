@@ -27,7 +27,7 @@ library(plyr)
 
 infer.sex <- function(gl_sex_filtered, system = NULL, seed = NULL) {
   
-  # Random seed if not specified by user
+  # Parameters check
   if(is.null(system)){
     stop("You must specify the sex-determination system with the parameter 'system' ('zw' or 'xy').")
   } else {
@@ -36,6 +36,7 @@ infer.sex <- function(gl_sex_filtered, system = NULL, seed = NULL) {
     }
   }
 
+  # Random seed if not specified by user
   if(is.null(seed)) {
     seed <- sample.int(65535, 1)
   }
@@ -59,8 +60,8 @@ infer.sex <- function(gl_sex_filtered, system = NULL, seed = NULL) {
   } else {
     all    <- table[table$xy.gametolog == TRUE, ]  # Gametologs
   }
-  all    <- all[order(all$stat.p.adjusted), ]    # Order from smallest p-value
-  useful <- row.names(all[1:5, ])                # Keep name of only top 5 gametologs
+  all    <- all[order(all$stat.p.adjusted), ]      # Order from smallest p-value
+  useful <- row.names(all[1:5, ])                  # Keep name of only top 5 gametologs
   
   
   # Make sex assignment per type of sex-linked loci (Functions declared below)
@@ -177,7 +178,7 @@ Z.sex <- function(gl, system = NULL, seed = 42){
   set.seed(seed)
   km <- kmeans(Z, 2)
   
-  i <- which.max(n1.z) # Largest proportion of '1'
+  i <- names(which.max(n1.z)) # Largest proportion of '1'
   label <- km$cluster[i]
   
   if(system == 'xy'){
@@ -192,7 +193,7 @@ Z.sex <- function(gl, system = NULL, seed = 42){
   Z.sex <- ifelse( km$cluster  == label, lab1, lab0)
   
   # Assign NA to inds with NA
-  if (!is.null(nrow(Zna)) && nrow(Zna) > 0 ){
+  if (!is.null(nrow(Zna)) && nrow(Zna) > 0){
     for (i in 1:nrow(Zna)) {
       Z.sex[length(Z.sex)+1] <- NA
       names(Z.sex)[length(names(Z.sex))] <- rownames(Zna)[i]
@@ -232,7 +233,7 @@ g.sex <-  function(gl, system = NULL, seed = 42, useful = useful) {
   set.seed(seed)
   km <- kmeans(Z, 2)
   
-  i <- which.max(n1.g) # Largest proportion of '1'
+  i <- names(which.max(n1.g)) # Largest proportion of '1'
   label <- km$cluster[i]
   
   if(system == 'xy'){
