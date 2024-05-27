@@ -273,6 +273,6 @@ g.sex <-  function(gl, system = NULL, seed = 42, useful = useful) {
 
 
 ################################ Example of use ################################
-##  inferred.sex <- infer.sex(filtered_gl,                                    ##
+##  inferred.sex <- infer.sex(gl_sex_filtered,                                ##
 ##                            system = "xy")                                  ##
 ################################################################################
