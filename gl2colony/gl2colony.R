@@ -225,6 +225,13 @@ gl2colony <- function(gl = NULL,
   }
               
   ################ 6. Add last parameters to COLONY2 file
+
+  if(!is.null(known_paternal_sibship)) paternal_sibship <- dim(known_paternal_sibship)[1]
+  if(!is.null(known_maternal_sibship)) maternal_sibship <- dim(known_maternal_sibship)[1]
+  if(!is.null(known_excluded_paternity)) excluded_paternity <- dim(known_excluded_paternity)[1]
+  if(!is.null(known_excluded_maternity)) excluded_maternity <- dim(known_excluded_maternity)[1]
+
+
   last_comments <- list('! Number of offspring with known paternity, exclusion threshold',
                         '! Number of offspring with known maternity, exclusion threshold',
                         '',
