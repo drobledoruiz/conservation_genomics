@@ -281,7 +281,7 @@ gl2colony <- function(gl = NULL,
     for(j in 2:L){
       x <- unname(unlist(dataframe[j,]))
       n <- sum(x != "")
-      cat(n, paste(x,collapse=' '),'\t', msg ,'\n')
+      cat(n, paste(x,collapse=' '),'\n')
     }
   }
 
