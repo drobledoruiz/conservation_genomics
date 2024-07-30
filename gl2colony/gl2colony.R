@@ -263,7 +263,6 @@ gl2colony <- function(gl = NULL,
       n <- sum(x != "")
       cat(x[1], n-1, paste(x[2:n],collapse=' '),'\n')
     }
-    cat('\n')
   }
   
   known_sibship <- function(dataframe, tag='paternal'){
@@ -277,7 +276,6 @@ gl2colony <- function(gl = NULL,
       n <- sum(x != "")
       cat(n, paste(x,collapse=' '),'\t', msg ,'\n')
     }
-    cat('\n')
   }
 
   for(i in 1:length(last_values)) {
@@ -285,6 +283,7 @@ gl2colony <- function(gl = NULL,
     ###################################
     if((last_comments[[i]]=='! Number of known paternal sibship') && (!is.null(known_paternal_sibship))){
       known_sibship(known_paternal_sibship, tag='paternal')
+      cat('\n')
     }
     ###################################
     if((last_comments[[i]]=='! Number of known maternal sibship') && (!is.null(known_maternal_sibship))){
@@ -293,6 +292,7 @@ gl2colony <- function(gl = NULL,
     ###################################
     if((last_comments[[i]]=='! Number of offspring with known excluded paternity') && (!is.null(known_excluded_paternity))){
       known_exclude_ids(known_excluded_paternity, tag='males')
+      cat('\n')
     }
     ###################################
     if((last_comments[[i]]=='! Number of offspring with known excluded maternity') && (!is.null(known_excluded_maternity))){
