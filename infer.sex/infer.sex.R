@@ -140,13 +140,15 @@ W.sex <- function(gl, system = NULL){
   n0.w <- rowSums(w == 0 | w == 2 | w == 1, na.rm = TRUE)
   n1.w <- rowSums(w == 3, na.rm = TRUE)
   
+if(FALSE){
   # Calculate proportion
   sex.score <- function(f, m){
     return( (-f+m)/(f+m) )
   }
   
   c2 <- sex.score(n0.w, n1.w)
-  
+}
+
   if(system == 'xy'){
     lab0 <- 'M'
     lab1 <-'F'
@@ -155,7 +157,7 @@ W.sex <- function(gl, system = NULL){
     lab1 <- 'M'
   }
   
-  W.sex <- ifelse(c2 < 0, lab0, lab1)
+  W.sex <- ifelse(n0.w < 3, lab1, lab0)
   
   Y <- data.frame(W.sex, n0.w, n1.w)
   return(Y)
