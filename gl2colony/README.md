@@ -63,13 +63,63 @@ Colony to update allele frequencies during the simulated annealing process in se
 
 - **other_typ_err** -- *Set to '0.05@' by default.*
 
+
+- **paternal_sibship** -- (Integer) Number of known paternal sibship. *Set to 0 by default.*
+
+- **known_paternal_sibship** -- (Dataframe) Table with known paternal sibship. In the table, each known paternal sibship/paternity takes a row, with the first column containing the father ID/name if the male is known and included in CMS, or a value of 0 to indicate that the father is unknown or not included in CMS. From the 2nd column on, the ID/name of each member of the paternal sibship is listed. Example:
+
+
+	| FatherID  | OffspringID1  | OffspringID2  |  OffspringID3 | 
+	| ------------- | ----------- | ------------ | ------------- | 
+	| M1 | O1 | O2| O3  |
+	| M2 | O4 | O7|   |
+	| 0 | O9 | O11 |   |
+
+	*Set to NULL by default.*
+
+- **maternal_sibship** --  (Integer) Number of known maternal sibship. *Set to 0 by default.*
+
+- **known_maternal_sibship** -- (Dataframe) Table with known maternal sibship. In the table, each known maternal sibship/maternity takes a row, with the first column containing the mother ID/name if the female is known and included in CFS or a value of 0 to indicate that the mother is unknown or not included in CFS. From the 2nd column on, the ID/name of each member of the sibship is listed. Example:
+
+
+	| MotherID  | OffspringID1  | OffspringID2  |  OffspringID3 | 
+	| ------------- | ----------- | ------------ | ------------- | 
+	| F1 | O1 | O2| O3  |
+	| F2 | O4 | O7|   |
+	| 0 | O9 | O11  |   |
+
+	*Set to NULL by default.*
+
+- **excluded_paternity** -- (Integer) Number of offspring with known excluded paternity. *Set to 0 by default.*
+
+- **known_excluded_paternity** -- (Dataframe) Table with known excluded candidate males. Each offspring with excluded paternity takes one row. The first entry of the row is the offspring ID/name, followed by the IDs of the candidate males that are excluded parentage of the offspring. *Example:
+
+
+	| OffspringID  | MaleID1  | MaleID2  |  MaleID3 | 
+	| ------------- | ----------- | ------------ | ------------- | 
+	| O1 | M1 | M2| M3  |
+	| O2 | M4 | M7|   |
+	| O4 | M9 |  |   |
+
+	*Set to NULL by default.*
+	
+- **excluded_maternity** --  (Integer) Number of offspring with known excluded maternity. *Set to 0 by default.*
+
+- **known_excluded_maternity** --  (Dataframe) Table with known excluded candidate females.   Each offspring with excluded maternity takes one row. The first entry of the row is the offspring ID/name, followed by the IDs of the candidate females that are excluded parentage of the offspring. Example:
+
+
+	| OffspringID  | FemaleID1  | FemaleID2  |  FemaleID3 | 
+	| ------------- | ----------- | ------------ | ------------- | 
+	| O1 | F1 | F2| F3  |
+	| O2 | F4 | F7|   |
+	| O4 | F9 |  |   |
+
+	*Set to NULL by default.*
+
+
 - Other colony2 parameters and their default values:
 	- **paternity_exclusion_threshold** -- *Set to '0 0' by default.*
 	- **maternity_exclusion_threshold** -- *Set to '0 0' by default.*
-	- **paternal_sibship** -- *Set to 0 by default.*
-	- **maternal_sibship** -- *Set to 0 by default.*
-	- **excluded_paternity** -- *Set to 0 by default.*
-	- **excluded_maternity** -- *Set to 0 by default.*
 	- **excluded_paternal_sibships** -- *Set to 0 by default.*
 	- **excluded_maternity_sibships** -- *Set to 0 by default.*
 

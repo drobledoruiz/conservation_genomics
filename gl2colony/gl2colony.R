@@ -60,9 +60,13 @@ gl2colony <- function(gl = NULL,
                       paternity_exclusion_threshold = '0 0',
                       maternity_exclusion_threshold = '0 0',
                       paternal_sibship = 0,
+                      known_paternal_sibship = NULL,
                       maternal_sibship = 0,
+                      known_maternal_sibship = NULL,
                       excluded_paternity = 0,
+                      known_excluded_paternity = NULL,
                       excluded_maternity = 0,
+                      known_excluded_maternity = NULL,
                       excluded_paternal_sibships = 0,
                       excluded_maternity_sibships = 0) {
 
@@ -221,6 +225,13 @@ gl2colony <- function(gl = NULL,
   }
               
   ################ 6. Add last parameters to COLONY2 file
+
+  if(!is.null(known_paternal_sibship)) paternal_sibship <- dim(known_paternal_sibship)[1]
+  if(!is.null(known_maternal_sibship)) maternal_sibship <- dim(known_maternal_sibship)[1]
+  if(!is.null(known_excluded_paternity)) excluded_paternity <- dim(known_excluded_paternity)[1]
+  if(!is.null(known_excluded_maternity)) excluded_maternity <- dim(known_excluded_maternity)[1]
+
+
   last_comments <- list('! Number of offspring with known paternity, exclusion threshold',
                         '! Number of offspring with known maternity, exclusion threshold',
                         '',
@@ -247,12 +258,56 @@ gl2colony <- function(gl = NULL,
 
   sink(filename_out, append =TRUE)  
   cat('\n')
+
+  known_exclude_ids <- function(dataframe, tag='females'){
+    msg <- sprintf("!Offspring ID, number of excluded %s, the IDs of excluded %s", tag,tag)
+    L <- dim(dataframe)[1]
+    x <- unname(unlist(dataframe[1,]))
+    n <- sum(x != "")
+    cat(x[1], n-1, paste(x[2:n],collapse=' '),'\t', msg ,'\n')
+    for(j in 2:L){
+      x <- unname(unlist(dataframe[j,]))
+      n <- sum(x != "")
+      cat(x[1], n-1, paste(x[2:n],collapse=' '),'\n')
+    }
+  }
   
+  known_sibship <- function(dataframe, tag='paternal'){
+    msg <- sprintf("!Size of known %s sibship, and IDs of offspring in the sibship", tag)
+    L <- dim(dataframe)[1]
+    x <- unname(unlist(dataframe[1,]))
+    n <- sum(x != "")
+    cat(n, paste(x,collapse=' '),'\t', msg ,'\n')
+    for(j in 2:L){
+      x <- unname(unlist(dataframe[j,]))
+      n <- sum(x != "")
+      cat(n, paste(x,collapse=' '),'\n')
+    }
+  }
+
   for(i in 1:length(last_values)) {
     cat(last_values[[i]],'\t\t',last_comments[[i]],'\n')
+    ###################################
+    if((last_comments[[i]]=='! Number of known paternal sibship') && (!is.null(known_paternal_sibship))){
+      known_sibship(known_paternal_sibship, tag='paternal')
+      cat('\n')
+    }
+    ###################################
+    if((last_comments[[i]]=='! Number of known maternal sibship') && (!is.null(known_maternal_sibship))){
+      known_sibship(known_maternal_sibship, tag='maternal')
+    }
+    ###################################
+    if((last_comments[[i]]=='! Number of offspring with known excluded paternity') && (!is.null(known_excluded_paternity))){
+      known_exclude_ids(known_excluded_paternity, tag='males')
+      cat('\n')
+    }
+    ###################################
+    if((last_comments[[i]]=='! Number of offspring with known excluded maternity') && (!is.null(known_excluded_maternity))){
+      known_exclude_ids(known_excluded_maternity, tag='females')
+    }
+    ###################################
   }
   sink()
-  
   # Finished
   cat(crayon::green$bold('(100%) COLONY2 file successfully exported!'))
 }
