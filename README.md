@@ -83,4 +83,4 @@ filtered_data <- filter.sex.linked(gl_EYR, system = "zw")
 ## Contact
 Do not hesitate to write to us asking any questions. We are happy to help!
 - Diana Robledo-Ruiz, diana.robledoruiz1@monash.edu
-- Jesus Castrejon-Figueroa, jcastrejon@ciencias.unam.mx
+- Jesus Castrejon-Figueroa, j.castrejon@unsw.edu.au
