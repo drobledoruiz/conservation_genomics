@@ -12,10 +12,11 @@
 ##  Output:                                                                   ##
 ##    $results.table - Dataframe with information on excessively-het loci     ##
 ##    $filtered.gl   - Genlight object without excessively-het loci           ##
+##    $removed.loci  - Vector with excessively-het loci names                 ##
 ##                                                                            ##
 ##  Index:                                                                    ##
-##    Line 21: Function filter.excess.het                                     ##
-##    Line 126: Example of use for filter.excess.het                          ##
+##    Line 22: Function filter.excess.het                                     ##
+##    Line 162: Example of use for filter.excess.het                          ##
 ################################################################################
 
 #################### Define function filter.excess.het ####################
@@ -119,36 +120,42 @@ filter.excess.het <- function(gl, Yates = FALSE){
 
   # Keep in table only loci p.adj <= 0.05 and ObsHet >= ExpHet
   table.filter <- table.filter[table.filter$p.adjusted<= 0.05 & table.filter$n1>=table.filter$En1,]
-  rownames(table.filter) <- 1:nrow(table.filter)
 
-  # Remove highly-het loci from new filtered gl
-  gl.filter <- gl[, !(gl$loc.names %in% table.filter$loci )]
+  # If there are excessively het, remove them
+  if (nrow(table.filter) == 0){  
+    message("No excessively-heterozygous loci found.")  
+  } else {
+    rownames(table.filter) <- 1:nrow(table.filter)
 
-  # Remove highly-het loci from new gl loci metadata
-  gl.filter@other$loc.metrics <- gl@other$loc.metrics[!(gl$loc.names %in% table.filter$loci ), ]
+    # Remove highly-het loci from new filtered gl
+    gl.filter <- gl[, !(gl$loc.names %in% table.filter$loci )]
 
-  ################## 5. AFTER plot with filtered gl
-  message("Building AFTER-filtering plot")
+    # Remove highly-het loci from new gl loci metadata
+    gl.filter@other$loc.metrics <- gl@other$loc.metrics[!(gl$loc.names %in% table.filter$loci ), ]
 
-  gen <- as.data.frame(t(as.matrix(gl.filter)))
-  n0 <- rowSums(gen == 0, na.rm = TRUE)
-  n1 <- rowSums(gen == 1, na.rm = TRUE)
-  n2 <- rowSums(gen == 2, na.rm = TRUE)
+    ################## 5. AFTER plot with filtered gl
+    message("Building AFTER-filtering plot")
 
-  fhe <- n1/(n0 + n1 + n2)
+    gen <- as.data.frame(t(as.matrix(gl.filter)))
+    n0 <- rowSums(gen == 0, na.rm = TRUE)
+    n1 <- rowSums(gen == 1, na.rm = TRUE)
+    n2 <- rowSums(gen == 2, na.rm = TRUE)
 
-  plt.AFT <- plot(fhe,
-                  main = "AFTER",
-                  ylab = "Locus heterozygosity",
-                  ylim = c(0, 1),
-                  xlim = c(0, gl@n.loc))
+    fhe <- n1/(n0 + n1 + n2)
 
-  ################## 6. Output
-  message("**FINISHED**. Removed ", gl@n.loc - gl.filter@n.loc, " excessively-heterozygous loci.")
+    plt.AFT <- plot(fhe,
+                    main = "AFTER",
+                    ylab = "Locus heterozygosity",
+                    ylim = c(0, 1),
+                    xlim = c(0, gl@n.loc))
 
-  return(list('filtered.gl'   = gl.filter,
-              'results.table' = table.filter,
-              'removed.loci'  = unique(table.filter$loci)))
+    ################## 6. Output
+    message("**FINISHED**. Removed ", gl@n.loc - gl.filter@n.loc, " excessively-heterozygous loci.")
+
+    return(list('filtered.gl'   = gl.filter,
+                'results.table' = table.filter,
+                'removed.loci'  = unique(table.filter$loci)))
+  }
 }
 ################################################################################
 
@@ -157,4 +164,5 @@ filter.excess.het <- function(gl, Yates = FALSE){
 ##                                     Yates = TRUE)                          ##
 ##  filtered.data$results.table                                               ##
 ##  filtered.data$filtered.gl                                                 ##
+##  filtered.data$removed.loci                                                ## 
 ################################################################################
