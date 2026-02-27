@@ -397,7 +397,7 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
   # For zw sex-determination system
   if(system == "zw") {
     table$z.linked     <- FALSE
-    table$zw.gametolog <- FALSE
+    table$gametolog <- FALSE
 
     for (i in 1:nrow(table)) {
       # Exclude w-linked loci and loci with sex-biased score
@@ -408,7 +408,7 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
           if (table[i, "heterozygosity.M"] > table[i, "heterozygosity.F"]) {
             table[i, "z.linked"] <- TRUE
           } else {
-            table[i, "zw.gametolog"] <- TRUE
+            table[i, "gametolog"] <- TRUE
           }
         }
       }
@@ -418,7 +418,7 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
   # For xy sex-determination system
   if(system == "xy") {
     table$x.linked     <- FALSE
-    table$xy.gametolog <- FALSE
+    table$gametolog <- FALSE
 
     for (i in 1:nrow(table)) {
       # Exclude y-linked loci and loci with sex-biased score
@@ -429,7 +429,7 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
           if (table[i, "heterozygosity.F"] > table[i, "heterozygosity.M"]) {
             table[i, "x.linked"] <- TRUE
           } else {
-            table[i, "xy.gametolog"] <- TRUE
+            table[i, "gametolog"] <- TRUE
           }
         }
       }
@@ -454,11 +454,11 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
       AFT.het <- plot(x = table[table$w.linked       == FALSE &
                                   table$sex.biased   == FALSE &
                                   table$z.linked     == FALSE &
-                                  table$zw.gametolog == FALSE, "heterozygosity.F"],
+                                  table$gametolog == FALSE, "heterozygosity.F"],
                       y = table[table$w.linked       == FALSE &
                                   table$sex.biased   == FALSE &
                                   table$z.linked     == FALSE &
-                                  table$zw.gametolog == FALSE, "heterozygosity.M"],
+                                  table$gametolog == FALSE, "heterozygosity.M"],
                       main = "AFTER",
                       xlab = "% Heterozygous Females",
                       ylab = "% Heterozygous Males",
@@ -479,11 +479,11 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
       AFT.het <- plot(x = table[table$y.linked     == FALSE &
                                   table$sex.biased   == FALSE &
                                   table$x.linked     == FALSE &
-                                  table$xy.gametolog == FALSE, "heterozygosity.F"],
+                                  table$gametolog == FALSE, "heterozygosity.F"],
                       y = table[table$y.linked     == FALSE &
                                   table$sex.biased   == FALSE &
                                   table$x.linked     == FALSE &
-                                  table$xy.gametolog == FALSE, "heterozygosity.M"],
+                                  table$gametolog == FALSE, "heterozygosity.M"],
                       main = "AFTER",
                       xlab = "% Heterozygous Females",
                       ylab = "% Heterozygous Males",
@@ -500,12 +500,12 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
     a <- table[table$w.linked     == TRUE, "index"]
     b <- table[table$sex.biased   == TRUE, "index"]
     c <- table[table$z.linked     == TRUE, "index"]
-    d <- table[table$zw.gametolog == TRUE, "index"]
+    d <- table[table$gametolog == TRUE, "index"]
 
     autosomal <- table[table$w.linked     == FALSE &
                        table$sex.biased   == FALSE &
                        table$z.linked     == FALSE &
-                       table$zw.gametolog == FALSE, "index"]
+                       table$gametolog == FALSE, "index"]
 
     message("**FINISHED** Total of analyzed loci: ", nrow(table), ".\n",
             "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
@@ -520,12 +520,12 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
     a <- table[table$y.linked     == TRUE, "index"]
     b <- table[table$sex.biased   == TRUE, "index"]
     c <- table[table$x.linked     == TRUE, "index"]
-    d <- table[table$xy.gametolog == TRUE, "index"]
+    d <- table[table$gametolog == TRUE, "index"]
 
     autosomal <- table[table$y.linked     == FALSE &
                        table$sex.biased   == FALSE &
                        table$x.linked     == FALSE &
-                       table$xy.gametolog == FALSE, "index"]
+                       table$gametolog == FALSE, "index"]
 
     message("**FINISHED** Total of analyzed loci: ", nrow(table), ".\n",
             "Found ", length(a)+length(b)+length(c)+length(d), " sex-linked loci:\n",
@@ -600,4 +600,5 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
 ##                                    plots = FALSE,                          ##
 ##                                    parallel = TRUE)                        ##
 ################################################################################
+
 
