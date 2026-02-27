@@ -538,10 +538,30 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
 
 
   ##### 3.2 Subset gl object (according to IntroTutorial_dartR.pdf, page 32)
-  A <- gl[ , a]  # Loci are columns
-  B <- gl[ , b]
-  C <- gl[ , c]
-  D <- gl[ , d]
+  if (length(a) > 0){
+    A <- x[, a]  # Loci are columns
+  } else {
+    A <- NULL
+  }
+  
+  if (length(b) > 0){
+    B <- x[, b]
+  } else {
+    B <- NULL
+  }
+  
+  if (length(c) > 0){
+    C <- x[, c]
+  } else {
+    C <- NULL
+  }
+  
+  if (length(d) > 0){
+    D <- x[, d]
+  } else {
+    D <- NULL
+  }
+  
   gl.autosomal <- gl[ , autosomal]
 
 
@@ -580,3 +600,4 @@ filter.sex.linked <- function(gl, system = NULL, plots = TRUE, parallel = FALSE)
 ##                                    plots = FALSE,                          ##
 ##                                    parallel = TRUE)                        ##
 ################################################################################
+
